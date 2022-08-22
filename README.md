@@ -201,9 +201,8 @@ class BlurryContainerViewController: NSViewController {
   }
 }
 
-class MainFlutterWindow: NSWindow, NSWindowDelegate {
+class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
-    delegate = self
     let blurryContainerViewController = BlurryContainerViewController()
     let windowFrame = self.frame
     self.contentViewController = blurryContainerViewController

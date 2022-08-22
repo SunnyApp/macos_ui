@@ -203,6 +203,8 @@ class MacosThemeData with Diagnosticable {
     MacosDatePickerThemeData? datePickerTheme,
     MacosTimePickerThemeData? timePickerTheme,
     MacosSearchFieldThemeData? searchFieldTheme,
+    MacosTextFieldThemeData? textFieldTheme,
+    MacosMenuItemThemeData? menuItemTheme,
   }) {
     // ignore: no_leading_underscores_for_local_identifiers
     final Brightness _brightness = brightness ?? Brightness.light;
@@ -216,6 +218,7 @@ class MacosThemeData with Diagnosticable {
           ? CupertinoColors.black
           : CupertinoColors.white,
     );
+    menuItemTheme ??= const DefaultMacosMenuItemThemeData();
     pushButtonTheme ??= PushButtonThemeData(
       color: primaryColor,
       secondaryColor: isDark
@@ -238,6 +241,7 @@ class MacosThemeData with Diagnosticable {
       brightness: _brightness,
       textStyle: typography.callout,
     );
+    textFieldTheme ??= const MacosTextFieldThemeData();
     scrollbarTheme ??= const MacosScrollbarThemeData();
     macosIconButtonTheme ??= MacosIconButtonThemeData(
       backgroundColor: MacosColors.transparent,
@@ -367,11 +371,13 @@ class MacosThemeData with Diagnosticable {
       scrollbarTheme: scrollbarTheme,
       iconButtonTheme: macosIconButtonTheme,
       iconTheme: iconTheme,
-      popupButtonTheme: popupButtonTheme,
       pulldownButtonTheme: pulldownButtonTheme,
       datePickerTheme: datePickerTheme,
       timePickerTheme: timePickerTheme,
       searchFieldTheme: searchFieldTheme,
+      popupButtonTheme: popupButtonTheme,
+      textFieldTheme: textFieldTheme,
+      menuItemTheme: menuItemTheme,
     );
 
     final customizedData = defaultData.copyWith(
@@ -387,6 +393,7 @@ class MacosThemeData with Diagnosticable {
       scrollbarTheme: scrollbarTheme,
       iconButtonTheme: macosIconButtonTheme,
       iconTheme: iconTheme,
+      menuItemTheme: menuItemTheme,
       popupButtonTheme: popupButtonTheme,
       pulldownButtonTheme: pulldownButtonTheme,
       datePickerTheme: datePickerTheme,
@@ -420,6 +427,8 @@ class MacosThemeData with Diagnosticable {
     required this.datePickerTheme,
     required this.timePickerTheme,
     required this.searchFieldTheme,
+    required this.textFieldTheme,
+    required this.menuItemTheme,
   });
 
   /// A default light theme.
@@ -465,7 +474,7 @@ class MacosThemeData with Diagnosticable {
   final HelpButtonThemeData helpButtonTheme;
 
   /// The default style for [MacosTooltip]s below the overall [MacosTheme]
-  final MacosTooltipThemeData tooltipTheme;
+  final TooltipThemeData tooltipTheme;
 
   /// The density value for specifying the compactness of various UI components.
   ///
@@ -496,6 +505,9 @@ class MacosThemeData with Diagnosticable {
   /// The default style for [MacosSearchField]s below the overall [MacosTheme]
   final MacosSearchFieldThemeData searchFieldTheme;
 
+  final MacosTextFieldThemeData textFieldTheme;
+  final MacosMenuItemThemeData menuItemTheme;
+
   /// Linearly interpolate between two themes.
   static MacosThemeData lerp(MacosThemeData a, MacosThemeData b, double t) {
     return MacosThemeData.raw(
@@ -508,8 +520,7 @@ class MacosThemeData with Diagnosticable {
           HelpButtonThemeData.lerp(a.helpButtonTheme, b.helpButtonTheme, t),
       pushButtonTheme:
           PushButtonThemeData.lerp(a.pushButtonTheme, b.pushButtonTheme, t),
-      tooltipTheme:
-          MacosTooltipThemeData.lerp(a.tooltipTheme, b.tooltipTheme, t),
+      tooltipTheme: TooltipThemeData.lerp(a.tooltipTheme, b.tooltipTheme, t),
       visualDensity: VisualDensity.lerp(a.visualDensity, b.visualDensity, t),
       scrollbarTheme:
           MacosScrollbarThemeData.lerp(a.scrollbarTheme, b.scrollbarTheme, t),
@@ -518,6 +529,8 @@ class MacosThemeData with Diagnosticable {
         b.iconButtonTheme,
         t,
       ),
+      menuItemTheme:
+          MacosMenuItemThemeData.lerp(a.menuItemTheme, b.menuItemTheme, t),
       iconTheme: MacosIconThemeData.lerp(a.iconTheme, b.iconTheme, t),
       popupButtonTheme: MacosPopupButtonThemeData.lerp(
         a.popupButtonTheme,
@@ -544,6 +557,8 @@ class MacosThemeData with Diagnosticable {
         b.searchFieldTheme,
         t,
       ),
+      textFieldTheme:
+          MacosTextFieldThemeData.lerp(a.textFieldTheme, b.textFieldTheme, t),
     );
   }
 
@@ -566,6 +581,8 @@ class MacosThemeData with Diagnosticable {
     MacosDatePickerThemeData? datePickerTheme,
     MacosTimePickerThemeData? timePickerTheme,
     MacosSearchFieldThemeData? searchFieldTheme,
+    MacosTextFieldThemeData? textFieldTheme,
+    MacosMenuItemThemeData? menuItemTheme,
   }) {
     return MacosThemeData.raw(
       brightness: brightness ?? this.brightness,
@@ -585,6 +602,8 @@ class MacosThemeData with Diagnosticable {
       datePickerTheme: this.datePickerTheme.merge(datePickerTheme),
       timePickerTheme: this.timePickerTheme.merge(timePickerTheme),
       searchFieldTheme: this.searchFieldTheme.merge(searchFieldTheme),
+      textFieldTheme: this.textFieldTheme.merge(textFieldTheme),
+      menuItemTheme: this.menuItemTheme.merge(menuItemTheme),
     );
   }
 
@@ -609,6 +628,7 @@ class MacosThemeData with Diagnosticable {
       datePickerTheme: datePickerTheme.merge(other.datePickerTheme),
       timePickerTheme: timePickerTheme.merge(other.timePickerTheme),
       searchFieldTheme: searchFieldTheme.merge(other.searchFieldTheme),
+      menuItemTheme: menuItemTheme.merge(other.menuItemTheme),
     );
   }
 

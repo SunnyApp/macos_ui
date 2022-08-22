@@ -43,13 +43,13 @@ class MacosApp extends StatefulWidget {
     this.navigatorKey,
     this.home,
     Map<String, Widget Function(BuildContext)> this.routes =
-        const <String, WidgetBuilder>{},
+    const <String, WidgetBuilder>{},
     this.initialRoute,
     this.onGenerateRoute,
     this.onGenerateInitialRoutes,
     this.onUnknownRoute,
     List<NavigatorObserver> this.navigatorObservers =
-        const <NavigatorObserver>[],
+    const <NavigatorObserver>[],
     this.builder,
     this.title = '',
     this.onGenerateTitle,
@@ -336,21 +336,21 @@ class _MacosAppState extends State<MacosApp> {
       child: DefaultTextStyle(
         style: TextStyle(color: theme.typography.body.color),
         child: widget.builder != null
-            // See the MaterialApp source code for the explanation for
-            // wrapping a builder in a builder
+        // See the MaterialApp source code for the explanation for
+        // wrapping a builder in a builder
             ? Builder(
-                builder: (context) {
-                  // An Overlay is used here because MacosTooltip needs an
-                  // Overlay as an ancestor in the widget tree.
-                  return Overlay(
-                    initialEntries: [
-                      OverlayEntry(
-                        builder: (context) => widget.builder!(context, child),
-                      ),
-                    ],
-                  );
-                },
-              )
+          builder: (context) {
+            // An Overlay is used here because MacosTooltip needs an
+            // Overlay as an ancestor in the widget tree.
+            return Overlay(
+              initialEntries: [
+                OverlayEntry(
+                  builder: (context) => widget.builder!(context, child),
+                ),
+              ],
+            );
+          },
+        )
             : child ?? const SizedBox.shrink(),
       ),
     );

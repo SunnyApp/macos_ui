@@ -63,7 +63,6 @@ class MacosRadioButton<T> extends StatelessWidget {
   /// Whether the button is disabled or not
   bool get isDisabled => onChanged == null;
 
-  /// Whether the button is selected or not.
   bool get selected => value == groupValue;
 
   @override
@@ -119,8 +118,8 @@ class MacosRadioButton<T> extends StatelessWidget {
                     (isDisabled
                         ? CupertinoColors.quaternarySystemFill
                         : selected || isLight
-                            ? CupertinoColors.white
-                            : CupertinoColors.tertiarySystemFill),
+                        ? CupertinoColors.white
+                        : CupertinoColors.tertiarySystemFill),
                 context,
               ),
               boxShadow: const [

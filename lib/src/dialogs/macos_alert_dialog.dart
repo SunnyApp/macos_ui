@@ -308,10 +308,10 @@ class _MacosAlertDialogRoute<T> extends PopupRoute<T> {
 
   @override
   Widget buildPage(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-  ) {
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      ) {
     return Semantics(
       scopesRoute: true,
       explicitChildNodes: true,
@@ -321,11 +321,11 @@ class _MacosAlertDialogRoute<T> extends PopupRoute<T> {
 
   @override
   Widget buildTransitions(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) {
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      Widget child,
+      ) {
     if (animation.status == AnimationStatus.reverse) {
       return FadeTransition(
         opacity: CurvedAnimation(

@@ -128,11 +128,11 @@ class _MacosColorWellState extends State<MacosColorWell> {
         child: Container(
           decoration: !theme.brightness.isDark
               ? BoxDecoration(
-                  border: Border.all(
-                    color: const MacosColor(0xFFAFAEAE),
-                    width: 1.5,
-                  ),
-                )
+            border: Border.all(
+              color: const MacosColor(0xFFAFAEAE),
+              width: 1.5,
+            ),
+          )
               : null,
           child: ColoredBox(
             color: outerColor,

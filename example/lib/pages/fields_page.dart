@@ -106,9 +106,9 @@ class _FieldsPageState extends State<FieldsPage> {
                     resultHeight: 40.0,
                     emptyWidget: const Center(
                         child: Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text("No action found!"),
-                    )),
+                          padding: EdgeInsets.all(8.0),
+                          child: Text("No action found!"),
+                        )),
                     placeholder: 'Search for an action...',
                     onResultSelected: (resultItem) {
                       // Retrieve the user-selected search suggestion via its

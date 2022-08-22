@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_ui/src/library.dart';
 
@@ -132,6 +133,283 @@ class _TextFieldSelectionGestureDetectorBuilder
   }
 }
 
+class MacosTextFieldTheme extends InheritedWidget {
+  const MacosTextFieldTheme({
+    super.key,
+    required this.data,
+    required super.child,
+  });
+
+  final MacosTextFieldThemeData data;
+
+  @override
+  bool updateShouldNotify(covariant MacosTextFieldTheme oldWidget) {
+    return data != oldWidget.data;
+  }
+
+  static MacosTextFieldThemeData of(
+    BuildContext context, [
+    MacosThemeData? macosThemeData,
+  ]) {
+    final result =
+        context.dependOnInheritedWidgetOfExactType<MacosTextFieldTheme>();
+    if (result == null) {
+      return macosThemeData?.textFieldTheme ??
+          MacosTheme.of(context).textFieldTheme;
+    } else {
+      return result.data;
+    }
+  }
+}
+
+class MacosTextFieldThemeData {
+  const MacosTextFieldThemeData.raw({
+    required this.decoration,
+    required this.focusedDecoration,
+    required this.padding,
+    required this.placeholderStyle,
+    required this.style,
+    required this.strutStyle,
+    required this.textAlign,
+    required this.textAlignVertical,
+    required this.obscuringCharacter,
+    required this.smartDashesType,
+    required this.smartQuotesType,
+    required this.cursorWidth,
+    required this.cursorHeight,
+    required this.cursorRadius,
+    required this.scrollPadding,
+    required this.cursorColor,
+    required this.selectionColor,
+    required this.selectionHeightStyle,
+    required this.selectionWidthStyle,
+  });
+
+  const MacosTextFieldThemeData({
+    this.decoration,
+    this.focusedDecoration,
+    this.padding,
+    this.placeholderStyle,
+    this.style,
+    this.strutStyle,
+    this.textAlign,
+    this.textAlignVertical,
+    this.obscuringCharacter,
+    this.smartDashesType,
+    this.smartQuotesType,
+    this.cursorWidth,
+    this.cursorHeight,
+    this.cursorRadius,
+    this.cursorColor,
+    this.selectionColor,
+    this.selectionHeightStyle,
+    this.selectionWidthStyle,
+    this.scrollPadding,
+  });
+
+  final Color? selectionColor;
+
+  /// Controls the [BoxDecoration] of the box behind the text input.
+  ///
+  /// Defaults to having a rounded rectangle grey border and can be null to have
+  /// no box decoration.
+  final BoxDecoration? decoration;
+
+  /// Controls the [BoxDecoration] of the box behind the text input when focused.
+  /// This decoration is drawn above [decoration].
+  ///
+  /// Defaults to having a rounded rectangle blue border and can be null to have
+  /// no box decoration.
+  final BoxDecoration? focusedDecoration;
+
+  /// Padding around the text entry area between the [prefix] and [suffix]
+  /// or the clear button when [clearButtonMode] is not never.
+  ///
+  /// Defaults to a padding of 6 pixels on all sides and can be null.
+  final EdgeInsets? padding;
+
+  /// The style to use for the placeholder text.
+  ///
+  /// The [placeholderStyle] is merged with the [style] [TextStyle] when applied
+  /// to the [placeholder] text. To avoid merging with [style], specify
+  /// [TextStyle.inherit] as false.
+  ///
+  /// Defaults to the [style] property with w300 font weight and grey color.
+  ///
+  /// If specifically set to null, placeholder's style will be the same as [style].
+  final TextStyle? placeholderStyle;
+
+  /// The style to use for the text being edited.
+  ///
+  /// Also serves as a base for the [placeholder] text's style.
+  ///
+  /// Defaults to the standard font style from [MacosTheme] if null.
+  final TextStyle? style;
+
+  /// {@macro flutter.widgets.editableText.strutStyle}
+  final StrutStyle? strutStyle;
+
+  /// {@macro flutter.widgets.editableText.textAlign}
+  final TextAlign? textAlign;
+
+  /// {@macro flutter.material.InputDecorator.textAlignVertical}
+  final TextAlignVertical? textAlignVertical;
+
+  /// {@macro flutter.widgets.editableText.obscuringCharacter}
+  final String? obscuringCharacter;
+
+  /// {@macro flutter.services.TextInputConfiguration.smartDashesType}
+  final SmartDashesType? smartDashesType;
+
+  /// {@macro flutter.services.TextInputConfiguration.smartQuotesType}
+  final SmartQuotesType? smartQuotesType;
+
+  /// {@macro flutter.widgets.editableText.cursorWidth}
+  final double? cursorWidth;
+
+  /// {@macro flutter.widgets.editableText.cursorHeight}
+  final double? cursorHeight;
+
+  /// {@macro flutter.widgets.editableText.cursorRadius}
+  final Radius? cursorRadius;
+  final EdgeInsets? scrollPadding;
+
+  /// The color to use when painting the cursor.
+  ///
+  /// Defaults to the [MacosThemeData.primaryColor] of the ambient theme,
+  /// which itself defaults to [CupertinoColors.activeBlue] in the light theme
+  /// and [CupertinoColors.activeOrange] in the dark theme.
+  final Color? cursorColor;
+
+  /// Controls how tall the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxHeightStyle] for details on available styles.
+  final ui.BoxHeightStyle? selectionHeightStyle;
+
+  /// Controls how wide the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxWidthStyle] for details on available styles.
+  final ui.BoxWidthStyle? selectionWidthStyle;
+
+  /// Linearly interpolate between two icon theme data objects.
+  ///
+  /// {@macro dart.ui.shadow.lerp}
+  static MacosTextFieldThemeData lerp(
+    MacosTextFieldThemeData? a,
+    MacosTextFieldThemeData? b,
+    double t,
+  ) {
+    return b ?? a!;
+  }
+
+  MacosTextFieldThemeData merge(MacosTextFieldThemeData? other) {
+    if (other == null) return this;
+    return copyWith(
+      decoration: other.decoration,
+      focusedDecoration: other.focusedDecoration,
+      padding: other.padding,
+      placeholderStyle: placeholderStyle == null
+          ? other.placeholderStyle
+          : placeholderStyle!.merge(other.placeholderStyle),
+      style: style == null ? other.style : style!.merge(other.style),
+      strutStyle: other.strutStyle,
+      textAlign: other.textAlign,
+      textAlignVertical: other.textAlignVertical,
+      obscuringCharacter: other.obscuringCharacter,
+      smartDashesType: other.smartDashesType,
+      smartQuotesType: other.smartQuotesType,
+      cursorWidth: other.cursorWidth,
+      cursorHeight: other.cursorHeight,
+      cursorRadius: other.cursorRadius,
+      scrollPadding: other.scrollPadding,
+      cursorColor: other.cursorColor,
+      selectionColor: other.selectionColor,
+      selectionHeightStyle: other.selectionHeightStyle,
+      selectionWidthStyle: other.selectionWidthStyle,
+    );
+  }
+
+  MacosTextFieldThemeData copyWith({
+    BoxDecoration? decoration,
+    BoxDecoration? focusedDecoration,
+    EdgeInsets? padding,
+    TextStyle? placeholderStyle,
+    TextStyle? style,
+    StrutStyle? strutStyle,
+    TextAlign? textAlign,
+    ToolbarOptions? toolbarOptions,
+    TextAlignVertical? textAlignVertical,
+    String? obscuringCharacter,
+    SmartDashesType? smartDashesType,
+    SmartQuotesType? smartQuotesType,
+    double? cursorWidth,
+    double? cursorHeight,
+    Radius? cursorRadius,
+    EdgeInsets? scrollPadding,
+    Color? cursorColor,
+    Color? selectionColor,
+    ui.BoxHeightStyle? selectionHeightStyle,
+    ui.BoxWidthStyle? selectionWidthStyle,
+  }) {
+    return MacosTextFieldThemeData.raw(
+      selectionColor: selectionColor ?? this.selectionColor,
+      decoration: decoration ?? this.decoration,
+      focusedDecoration: focusedDecoration ?? this.focusedDecoration,
+      padding: padding ?? this.padding,
+      placeholderStyle: placeholderStyle ?? this.placeholderStyle,
+      style: style ?? this.style,
+      strutStyle: strutStyle ?? this.strutStyle,
+      textAlign: textAlign ?? this.textAlign,
+      textAlignVertical: textAlignVertical ?? this.textAlignVertical,
+      obscuringCharacter: obscuringCharacter ?? this.obscuringCharacter,
+      smartDashesType: smartDashesType ?? this.smartDashesType,
+      smartQuotesType: smartQuotesType ?? this.smartQuotesType,
+      cursorWidth: cursorWidth ?? this.cursorWidth,
+      cursorHeight: cursorHeight ?? this.cursorHeight,
+      cursorRadius: cursorRadius ?? this.cursorRadius,
+      scrollPadding: scrollPadding ?? this.scrollPadding,
+      cursorColor: cursorColor ?? this.cursorColor,
+      selectionHeightStyle: selectionHeightStyle ?? this.selectionHeightStyle,
+      selectionWidthStyle: selectionWidthStyle ?? this.selectionWidthStyle,
+    );
+  }
+
+  MacosTextFieldThemeData resolveWidget(MacosTextField widget) {
+    return MacosTextFieldThemeData.raw(
+      decoration:
+          widget.decoration ?? decoration ?? kDefaultRoundedBorderDecoration,
+      focusedDecoration: widget.focusedDecoration ??
+          focusedDecoration ??
+          kDefaultFocusedBorderDecoration,
+      padding: widget.padding ?? padding ?? const EdgeInsets.all(4.0),
+      placeholderStyle: (placeholderStyle ?? _kDefaultPlaceholderStyle)
+          .merge(widget.placeholderStyle),
+      style: (style ?? _kDefaultTextStyle).merge(widget.style),
+      selectionColor: widget.selectionColor ?? selectionColor,
+      strutStyle: widget.strutStyle ?? strutStyle,
+      textAlign: widget.textAlign ?? textAlign ?? TextAlign.start,
+      textAlignVertical: widget.textAlignVertical ?? textAlignVertical,
+      obscuringCharacter:
+          widget.obscuringCharacter ?? obscuringCharacter ?? '•',
+      smartDashesType: widget.smartDashesType ?? smartDashesType,
+      smartQuotesType: widget.smartQuotesType ?? smartQuotesType,
+      cursorWidth: widget.cursorWidth ?? cursorWidth ?? 2.0,
+      cursorHeight: widget.cursorHeight ?? cursorHeight,
+      cursorRadius:
+          widget.cursorRadius ?? cursorRadius ?? const Radius.circular(2.0),
+      scrollPadding:
+          widget.scrollPadding ?? scrollPadding ?? const EdgeInsets.all(20.0),
+      cursorColor: widget.cursorColor ?? cursorColor,
+      selectionHeightStyle: widget.selectionHeightStyle ??
+          selectionHeightStyle ??
+          ui.BoxHeightStyle.tight,
+      selectionWidthStyle: widget.selectionWidthStyle ??
+          selectionWidthStyle ??
+          ui.BoxWidthStyle.tight,
+    );
+  }
+}
+
 /// An macos-style text field.
 ///
 /// A text field lets the user enter text, either with a hardware keyboard or with
@@ -234,14 +512,11 @@ class MacosTextField extends StatefulWidget {
     super.key,
     this.controller,
     this.focusNode,
-    this.decoration = kDefaultRoundedBorderDecoration,
-    this.focusedDecoration = kDefaultFocusedBorderDecoration,
-    this.padding = const EdgeInsets.all(4.0),
+    this.decoration,
+    this.focusedDecoration,
+    this.padding,
     this.placeholder,
-    this.placeholderStyle = const TextStyle(
-      fontWeight: FontWeight.w400,
-      color: CupertinoColors.placeholderText,
-    ),
+    this.placeholderStyle,
     this.prefix,
     this.prefixMode = OverlayVisibilityMode.always,
     this.suffix,
@@ -252,13 +527,14 @@ class MacosTextField extends StatefulWidget {
     this.textCapitalization = TextCapitalization.none,
     this.style,
     this.strutStyle,
-    this.textAlign = TextAlign.start,
+    this.textAlign,
     this.textAlignVertical,
     this.readOnly = false,
     ToolbarOptions? toolbarOptions,
     this.showCursor,
+    this.selectionColor,
     this.autofocus = false,
-    this.obscuringCharacter = '•',
+    this.obscuringCharacter,
     this.obscureText = false,
     this.autocorrect = true,
     SmartDashesType? smartDashesType,
@@ -274,14 +550,14 @@ class MacosTextField extends StatefulWidget {
     this.onSubmitted,
     this.inputFormatters,
     this.enabled,
-    this.cursorWidth = 2.0,
+    this.cursorWidth,
     this.cursorHeight,
-    this.cursorRadius = const Radius.circular(2.0),
+    this.cursorRadius,
     this.cursorColor,
-    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
-    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
+    this.selectionHeightStyle,
+    this.selectionWidthStyle,
     this.keyboardAppearance,
-    this.scrollPadding = const EdgeInsets.all(20.0),
+    this.scrollPadding,
     this.dragStartBehavior = DragStartBehavior.start,
     this.enableInteractiveSelection = true,
     this.selectionControls,
@@ -290,10 +566,10 @@ class MacosTextField extends StatefulWidget {
     this.scrollPhysics,
     this.autofillHints,
     this.restorationId,
-  })  : smartDashesType = smartDashesType ??
-            (obscureText ? SmartDashesType.disabled : SmartDashesType.enabled),
-        smartQuotesType = smartQuotesType ??
-            (obscureText ? SmartQuotesType.disabled : SmartQuotesType.enabled),
+  })  : smartDashesType =
+            smartDashesType ?? (obscureText ? SmartDashesType.disabled : null),
+        smartQuotesType =
+            smartQuotesType ?? (obscureText ? SmartQuotesType.disabled : null),
         assert(maxLines == null || maxLines > 0),
         assert(minLines == null || minLines > 0),
         assert(
@@ -417,6 +693,7 @@ class MacosTextField extends StatefulWidget {
     this.enableInteractiveSelection = true,
     this.selectionControls,
     this.onTap,
+    this.selectionColor,
     this.scrollController,
     this.scrollPhysics,
     this.autofillHints,
@@ -459,6 +736,8 @@ class MacosTextField extends StatefulWidget {
                     paste: true,
                   ));
 
+  final Color? selectionColor;
+
   /// Controls the text being edited.
   ///
   /// If null, this widget will create its own [TextEditingController].
@@ -484,7 +763,7 @@ class MacosTextField extends StatefulWidget {
   /// or the clear button when [clearButtonMode] is not never.
   ///
   /// Defaults to a padding of 6 pixels on all sides and can be null.
-  final EdgeInsets padding;
+  final EdgeInsets? padding;
 
   /// A lighter colored placeholder hint that appears on the first line of the
   /// text field when the text entry is empty.
@@ -561,7 +840,7 @@ class MacosTextField extends StatefulWidget {
   final StrutStyle? strutStyle;
 
   /// {@macro flutter.widgets.editableText.textAlign}
-  final TextAlign textAlign;
+  final TextAlign? textAlign;
 
   /// Configuration of toolbar options.
   ///
@@ -583,7 +862,7 @@ class MacosTextField extends StatefulWidget {
   final bool autofocus;
 
   /// {@macro flutter.widgets.editableText.obscuringCharacter}
-  final String obscuringCharacter;
+  final String? obscuringCharacter;
 
   /// {@macro flutter.widgets.editableText.obscureText}
   final bool obscureText;
@@ -592,10 +871,10 @@ class MacosTextField extends StatefulWidget {
   final bool autocorrect;
 
   /// {@macro flutter.services.TextInputConfiguration.smartDashesType}
-  final SmartDashesType smartDashesType;
+  final SmartDashesType? smartDashesType;
 
   /// {@macro flutter.services.TextInputConfiguration.smartQuotesType}
-  final SmartQuotesType smartQuotesType;
+  final SmartQuotesType? smartQuotesType;
 
   /// {@macro flutter.services.TextInputConfiguration.enableSuggestions}
   final bool enableSuggestions;
@@ -665,13 +944,13 @@ class MacosTextField extends StatefulWidget {
   final bool? enabled;
 
   /// {@macro flutter.widgets.editableText.cursorWidth}
-  final double cursorWidth;
+  final double? cursorWidth;
 
   /// {@macro flutter.widgets.editableText.cursorHeight}
   final double? cursorHeight;
 
   /// {@macro flutter.widgets.editableText.cursorRadius}
-  final Radius cursorRadius;
+  final Radius? cursorRadius;
 
   /// The color to use when painting the cursor.
   ///
@@ -683,12 +962,12 @@ class MacosTextField extends StatefulWidget {
   /// Controls how tall the selection highlight boxes are computed to be.
   ///
   /// See [ui.BoxHeightStyle] for details on available styles.
-  final ui.BoxHeightStyle selectionHeightStyle;
+  final ui.BoxHeightStyle? selectionHeightStyle;
 
   /// Controls how wide the selection highlight boxes are computed to be.
   ///
   /// See [ui.BoxWidthStyle] for details on available styles.
-  final ui.BoxWidthStyle selectionWidthStyle;
+  final ui.BoxWidthStyle? selectionWidthStyle;
 
   /// The appearance of the keyboard.
   ///
@@ -698,7 +977,7 @@ class MacosTextField extends StatefulWidget {
   final Brightness? keyboardAppearance;
 
   /// {@macro flutter.widgets.editableText.scrollPadding}
-  final EdgeInsets scrollPadding;
+  final EdgeInsets? scrollPadding;
 
   /// {@macro flutter.widgets.editableText.enableInteractiveSelection}
   final bool enableInteractiveSelection;
@@ -930,7 +1209,7 @@ class _MacosTextFieldState extends State<MacosTextField>
   }
 
   void _handleFocusChanged() {
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   @override
@@ -1080,6 +1359,7 @@ class _MacosTextFieldState extends State<MacosTextField>
   }
 
   Widget _addTextDependentAttachments(
+    MacosTextFieldThemeData theme,
     Widget editableText,
     TextStyle textStyle,
     TextStyle placeholderStyle,
@@ -1112,8 +1392,8 @@ class _MacosTextFieldState extends State<MacosTextField>
             if (_showPrefixWidget(text!))
               Padding(
                 padding: EdgeInsets.only(
-                  top: widget.padding.top,
-                  bottom: widget.padding.bottom,
+                  top: theme.padding!.top,
+                  bottom: theme.padding!.bottom,
                   left: 6.0,
                   right: 6.0,
                 ),
@@ -1138,13 +1418,13 @@ class _MacosTextFieldState extends State<MacosTextField>
                     SizedBox(
                       width: double.infinity,
                       child: Padding(
-                        padding: widget.padding,
+                        padding: theme.padding!,
                         child: Text(
                           widget.placeholder!,
                           maxLines: widget.maxLines,
                           overflow: TextOverflow.ellipsis,
                           style: placeholderStyle,
-                          textAlign: widget.textAlign,
+                          textAlign: theme.textAlign,
                         ),
                       ),
                     ),
@@ -1162,7 +1442,7 @@ class _MacosTextFieldState extends State<MacosTextField>
                 child: GestureDetector(
                   key: _clearGlobalKey,
                   onTap: widget.enabled ?? true
-                      ? () {
+                      ? (() {
                           // Special handle onChanged for ClearButton
                           // Also call onChanged when the clear button is tapped.
                           final bool textChanged =
@@ -1171,14 +1451,14 @@ class _MacosTextFieldState extends State<MacosTextField>
                           if (widget.onChanged != null && textChanged) {
                             widget.onChanged!(_effectiveController.text);
                           }
-                        }
+                        })
                       : null,
                   child: Padding(
                     padding: EdgeInsets.only(
                       left: 6.0,
                       right: 6.0,
-                      top: widget.padding.top,
-                      bottom: widget.padding.bottom,
+                      top: theme.padding!.top,
+                      bottom: theme.padding!.bottom,
                     ),
                     child: Icon(
                       CupertinoIcons.clear_thick_circled,
@@ -1201,6 +1481,11 @@ class _MacosTextFieldState extends State<MacosTextField>
     assert(debugCheckHasDirectionality(context));
     assert(debugCheckHasMacosTheme(context));
     final TextEditingController controller = _effectiveController;
+
+    var macosThemeData = MacosTheme.of(context);
+    // ignore: no_leading_underscores_for_local_identifiers
+    final _textFieldTheme = MacosTextFieldTheme.of(context, macosThemeData);
+    var textFieldTheme = _textFieldTheme.resolveWidget(widget);
 
     TextSelectionControls? textSelectionControls = widget.selectionControls;
     switch (defaultTargetPlatform) {
@@ -1231,25 +1516,26 @@ class _MacosTextFieldState extends State<MacosTextField>
           maxLengthEnforcement: _effectiveMaxLengthEnforcement,
         ),
     ];
-    final MacosThemeData themeData = MacosTheme.of(context);
+    final MacosThemeData themeData = macosThemeData;
 
-    final TextStyle? resolvedStyle = widget.style?.copyWith(
-      color: MacosDynamicColor.maybeResolve(widget.style?.color, context),
+    final TextStyle? resolvedStyle = (textFieldTheme.style)?.copyWith(
+      color:
+          MacosDynamicColor.maybeResolve(textFieldTheme.style?.color, context),
       backgroundColor: MacosDynamicColor.maybeResolve(
-        widget.style?.backgroundColor,
+        textFieldTheme.style?.backgroundColor,
         context,
       ),
     );
 
     final textStyle = themeData.typography.body.merge(resolvedStyle);
 
-    final resolvedPlaceholderStyle = widget.placeholderStyle?.copyWith(
+    final resolvedPlaceholderStyle = textFieldTheme.placeholderStyle?.copyWith(
       color: MacosDynamicColor.maybeResolve(
-        widget.placeholderStyle?.color,
+        textFieldTheme.placeholderStyle?.color,
         context,
       ),
       backgroundColor: MacosDynamicColor.maybeResolve(
-        widget.placeholderStyle?.backgroundColor,
+        textFieldTheme.placeholderStyle?.backgroundColor,
         context,
       ),
     );
@@ -1261,26 +1547,40 @@ class _MacosTextFieldState extends State<MacosTextField>
 
     final Brightness keyboardAppearance =
         widget.keyboardAppearance ?? MacosTheme.brightnessOf(context);
-    Color? cursorColor;
-    cursorColor = MacosDynamicColor.maybeResolve(widget.cursorColor, context);
-    cursorColor ??=
-        themeData.brightness.isDark ? MacosColors.white : MacosColors.black;
+    final Color cursorColor =
+        MacosDynamicColor.maybeResolve(textFieldTheme.cursorColor, context) ??
+            themeData.primaryColor;
     final Color disabledColor =
         MacosDynamicColor.resolve(_kDisabledBackground, context);
 
-    Color? decorationColor =
-        MacosDynamicColor.maybeResolve(widget.decoration?.color, context);
-    if (decorationColor.runtimeType == ResolvedMacosDynamicColor) {
-      if ((decorationColor as ResolvedMacosDynamicColor).color ==
-              const Color(0xffffffff) ||
-          (decorationColor).darkColor == const Color(0xff000000)) {
-        decorationColor = themeData.brightness.isDark
-            ? const Color.fromRGBO(30, 30, 30, 1)
-            : MacosColors.white;
-      }
-    }
+    final Color? decorationColor = MacosDynamicColor.maybeResolve(
+      textFieldTheme.decoration?.color,
+      context,
+    );
 
-    final BoxBorder? border = widget.decoration?.border;
+    // New code from merge
+    // final Brightness keyboardAppearance =
+    //     widget.keyboardAppearance ?? MacosTheme.brightnessOf(context);
+    // Color? cursorColor;
+    // cursorColor = MacosDynamicColor.maybeResolve(widget.cursorColor, context);
+    // cursorColor ??=
+    // themeData.brightness.isDark ? MacosColors.white : MacosColors.black;
+    // final Color disabledColor =
+    // MacosDynamicColor.resolve(_kDisabledBackground, context);
+    //
+    // Color? decorationColor =
+    // MacosDynamicColor.maybeResolve(widget.decoration?.color, context);
+    // if (decorationColor.runtimeType == ResolvedMacosDynamicColor) {
+    //   if ((decorationColor as ResolvedMacosDynamicColor).color ==
+    //       const Color(0xffffffff) ||
+    //       (decorationColor).darkColor == const Color(0xff000000)) {
+    //     decorationColor = themeData.brightness.isDark
+    //         ? const Color.fromRGBO(30, 30, 30, 1)
+    //         : MacosColors.white;
+    //   }
+    // }
+
+    final BoxBorder? border = textFieldTheme.decoration?.border;
     Border? resolvedBorder = border as Border?;
     if (border is Border) {
       BorderSide resolveBorderSide(BorderSide side) {
@@ -1301,18 +1601,22 @@ class _MacosTextFieldState extends State<MacosTextField>
             );
     }
 
-    final BoxDecoration? effectiveDecoration = widget.decoration?.copyWith(
+    final BoxDecoration? effectiveDecoration =
+        textFieldTheme.decoration?.copyWith(
       border: resolvedBorder,
       color: enabled ? decorationColor : disabledColor,
     );
 
-    final BoxDecoration? focusedDecoration = widget.focusedDecoration?.copyWith(
-      border: Border.all(
-        width: 3.0,
-        color: themeData.brightness.isDark
-            ? const Color.fromRGBO(26, 169, 255, 0.3)
-            : const Color.fromRGBO(0, 103, 244, 0.25),
-      ),
+    //frommerge
+    // Border.all(
+    //   width: 3.0,
+    //   color: themeData.brightness.isDark
+    //       ? const Color.fromRGBO(26, 169, 255, 0.3)
+    //       : const Color.fromRGBO(0, 103, 244, 0.25),
+    // );
+    final BoxDecoration? focusedDecoration =
+        textFieldTheme.focusedDecoration?.copyWith(
+      border: Border.all(width: 3.0, color: themeData.primaryColor),
     );
 
     final focusedPlaceholderDecoration = focusedDecoration?.copyWith(
@@ -1338,11 +1642,11 @@ class _MacosTextFieldState extends State<MacosTextField>
       color: focusedDecoration.color ?? const Color(0x00000000),
     );
 
-    final Color selectionColor =
-        MacosTheme.of(context).primaryColor.withOpacity(0.2);
+    final Color selectionColor = textFieldTheme.selectionColor ??
+        macosThemeData.primaryColor.withOpacity(0.2);
 
     final Widget paddedEditable = Padding(
-      padding: widget.padding,
+      padding: textFieldTheme.padding!,
       child: RepaintBoundary(
         child: UnmanagedRestorationScope(
           bucket: bucket,
@@ -1358,14 +1662,14 @@ class _MacosTextFieldState extends State<MacosTextField>
             textInputAction: widget.textInputAction,
             textCapitalization: widget.textCapitalization,
             style: textStyle,
-            strutStyle: widget.strutStyle,
-            textAlign: widget.textAlign,
+            strutStyle: textFieldTheme.strutStyle,
+            textAlign: textFieldTheme.textAlign!,
             autofocus: widget.autofocus,
-            obscuringCharacter: widget.obscuringCharacter,
+            obscuringCharacter: textFieldTheme.obscuringCharacter!,
             obscureText: widget.obscureText,
             autocorrect: widget.autocorrect,
-            smartDashesType: widget.smartDashesType,
-            smartQuotesType: widget.smartQuotesType,
+            smartDashesType: textFieldTheme.smartDashesType,
+            smartQuotesType: textFieldTheme.smartQuotesType,
             enableSuggestions: widget.enableSuggestions,
             maxLines: widget.maxLines,
             minLines: widget.minLines,
@@ -1379,9 +1683,9 @@ class _MacosTextFieldState extends State<MacosTextField>
             onSubmitted: widget.onSubmitted,
             inputFormatters: formatters,
             rendererIgnoresPointer: true,
-            cursorWidth: widget.cursorWidth,
-            cursorHeight: widget.cursorHeight,
-            cursorRadius: widget.cursorRadius,
+            cursorWidth: textFieldTheme.cursorWidth!,
+            cursorHeight: textFieldTheme.cursorHeight,
+            cursorRadius: textFieldTheme.cursorRadius,
             cursorColor: cursorColor,
             cursorOpacityAnimates: true,
             cursorOffset: cursorOffset,
@@ -1391,9 +1695,9 @@ class _MacosTextFieldState extends State<MacosTextField>
               CupertinoColors.inactiveGray,
               context,
             ),
-            selectionHeightStyle: widget.selectionHeightStyle,
-            selectionWidthStyle: widget.selectionWidthStyle,
-            scrollPadding: widget.scrollPadding,
+            selectionHeightStyle: textFieldTheme.selectionHeightStyle!,
+            selectionWidthStyle: textFieldTheme.selectionWidthStyle!,
+            scrollPadding: textFieldTheme.scrollPadding!,
             keyboardAppearance: keyboardAppearance,
             dragStartBehavior: widget.dragStartBehavior,
             scrollController: widget.scrollController,
@@ -1436,6 +1740,7 @@ class _MacosTextFieldState extends State<MacosTextField>
                 widthFactor: 1.0,
                 heightFactor: 1.0,
                 child: _addTextDependentAttachments(
+                  textFieldTheme,
                   paddedEditable,
                   textStyle,
                   placeholderStyle,

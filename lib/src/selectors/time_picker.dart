@@ -182,9 +182,9 @@ class _MacosTimePickerState extends State<MacosTimePicker> {
   }
 
   Widget _buildTextualTimePicker(
-    MacosTimePickerThemeData timePickerTheme,
-    MaterialLocalizations localizations,
-  ) {
+      MacosTimePickerThemeData timePickerTheme,
+      MaterialLocalizations localizations,
+      ) {
     return KeyboardShortcutRunner(
       onUpArrowKeypress: _incrementElement,
       onDownArrowKeypress: _decrementElement,
@@ -280,7 +280,7 @@ class _MacosTimePickerState extends State<MacosTimePicker> {
                         painter: UpCaretPainter(
                           color: timePickerTheme.caretColor!,
                           backgroundColor:
-                              timePickerTheme.caretControlsBackgroundColor!,
+                          timePickerTheme.caretControlsBackgroundColor!,
                         ),
                       ),
                     ),
@@ -312,7 +312,7 @@ class _MacosTimePickerState extends State<MacosTimePicker> {
                         painter: DownCaretPainter(
                           color: timePickerTheme.caretColor!,
                           backgroundColor:
-                              timePickerTheme.caretControlsBackgroundColor!,
+                          timePickerTheme.caretControlsBackgroundColor!,
                         ),
                       ),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/physics.dart';
+import 'package:flutter/rendering.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_ui/src/library.dart';
 
@@ -110,6 +111,7 @@ Future<T?> showMacosSheet<T>({
   String? barrierLabel,
   bool useRootNavigator = true,
   RouteSettings? routeSettings,
+  Constraints? constraints,
 }) {
   barrierColor ??= MacosDynamicColor.resolve(
     MacosColors.controlBackgroundColor,
@@ -120,7 +122,16 @@ Future<T?> showMacosSheet<T>({
     _MacosSheetRoute<T>(
       settings: routeSettings,
       pageBuilder: (context, animation, secondaryAnimation) {
-        return builder(context);
+        if (constraints is BoxConstraints) {
+          return Center(
+            child: Container(
+              constraints: constraints,
+              child: builder(context),
+            ),
+          );
+        } else {
+          return builder(context);
+        }
       },
       barrierDismissible: barrierDismissible,
       barrierColor: barrierColor,

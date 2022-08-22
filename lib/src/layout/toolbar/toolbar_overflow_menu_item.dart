@@ -63,9 +63,9 @@ class _ToolbarOverflowMenuItemState extends State<ToolbarOverflowMenuItem> {
   Color get _textColor => _isHighlighted
       ? MacosColors.white
       : MacosTheme.brightnessOf(context).resolve(
-          MacosColors.black,
-          MacosColors.white,
-        );
+    MacosColors.black,
+    MacosColors.white,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -111,16 +111,16 @@ class _ToolbarOverflowMenuItemState extends State<ToolbarOverflowMenuItem> {
                 ),
                 child: (hasSubMenu)
                     ? Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          child,
-                          MacosIcon(
-                            CupertinoIcons.chevron_right,
-                            size: 12.0,
-                            color: _textColor,
-                          ),
-                        ],
-                      )
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    child,
+                    MacosIcon(
+                      CupertinoIcons.chevron_right,
+                      size: 12.0,
+                      color: _textColor,
+                    ),
+                  ],
+                )
                     : child,
               ),
             ),

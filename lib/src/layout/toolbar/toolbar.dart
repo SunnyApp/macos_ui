@@ -35,6 +35,7 @@ class ToolBar extends StatefulWidget {
     this.height = _kToolbarHeight,
     this.alignment = Alignment.center,
     this.title,
+    this.brightness,
     this.titleWidth = _kTitleWidth,
     this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4.0),
     this.decoration,
@@ -77,6 +78,9 @@ class ToolBar extends StatefulWidget {
 
   /// The decoration to paint behind the [title].
   final BoxDecoration? decoration;
+
+  /// Color for foreground text and icons
+  final Brightness? brightness;
 
   /// Empty space to inscribe inside the toolbar. The [title], if any, is
   /// placed inside this padding.
@@ -205,6 +209,7 @@ class _ToolBarState extends State<ToolBar> {
         padding: EdgeInsets.only(
           left: !kIsWeb && isMacOS ? 70 : 0,
         ),
+        platformBrightness: widget.brightness,
       ),
       child: ClipRect(
         child: BackdropFilter(

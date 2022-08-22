@@ -49,7 +49,9 @@ class SidebarItems extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onChanged,
+    required this.items,
     this.itemSize = SidebarItemSize.medium,
+    this.shrinkWrap = false,
     this.scrollController,
     this.selectedColor,
     this.unselectedColor,
@@ -76,6 +78,8 @@ class SidebarItems extends StatelessWidget {
   /// The scroll controller used by this sidebar. If null, a local scroll
   /// controller is created.
   final ScrollController? scrollController;
+
+  final bool shrinkWrap;
 
   /// The color to paint the item when it's selected.
   ///
@@ -118,11 +122,13 @@ class SidebarItems extends StatelessWidget {
     return IconTheme.merge(
       data: const IconThemeData(size: 20),
       child: _SidebarItemsConfiguration(
-        selectedColor: selectedColor ?? theme.primaryColor,
-        unselectedColor: unselectedColor ?? MacosColors.transparent,
-        shape: shape ?? _defaultShape,
+        data: _SidebarItemsData(
+          selectedColor: selectedColor ?? theme.primaryColor,
+          unselectedColor: unselectedColor ?? MacosColors.transparent,
+          shape: shape ?? _defaultShape,
         itemSize: itemSize,
         child: ListView(
+          shrinkWrap: shrinkWrap,
           controller: scrollController,
           physics: const ClampingScrollPhysics(),
           padding: EdgeInsets.all(10.0 - theme.visualDensity.horizontal),
@@ -142,7 +148,7 @@ class SidebarItems extends StatelessWidget {
             }
             return MouseRegion(
               cursor: cursor!,
-              child: _SidebarItem(
+              child: MacosSidebarItem(
                 item: item,
                 selected: _allItems[currentIndex] == item,
                 onClick: () => onChanged(_allItems.indexOf(item)),
@@ -155,43 +161,62 @@ class SidebarItems extends StatelessWidget {
   }
 }
 
-class _SidebarItemsConfiguration extends InheritedWidget {
-  // ignore: use_super_parameters
-  const _SidebarItemsConfiguration({
-    Key? key,
-    required super.child,
+class _SidebarItemsData {
+  const _SidebarItemsData({
     this.selectedColor = MacosColors.transparent,
     this.unselectedColor = MacosColors.transparent,
     this.shape = _defaultShape,
-    this.itemSize = SidebarItemSize.medium,
-  }) : super(key: key);
+  });
 
   final Color selectedColor;
   final Color unselectedColor;
   final ShapeBorder shape;
-  final SidebarItemSize itemSize;
 
-  static _SidebarItemsConfiguration of(BuildContext context) {
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _SidebarItemsData &&
+          runtimeType == other.runtimeType &&
+          selectedColor == other.selectedColor &&
+          unselectedColor == other.unselectedColor &&
+          shape == other.shape;
+
+  @override
+  int get hashCode =>
+      selectedColor.hashCode ^ unselectedColor.hashCode ^ shape.hashCode;
+}
+
+class _SidebarItemsConfiguration extends InheritedWidget {
+  const _SidebarItemsConfiguration({
+    super.key,
+    required super.child,
+    required this.data,
+  });
+
+  final _SidebarItemsData data;
+
+  static _SidebarItemsData of(BuildContext context) {
     return context
-        .dependOnInheritedWidgetOfExactType<_SidebarItemsConfiguration>()!;
+            .dependOnInheritedWidgetOfExactType<_SidebarItemsConfiguration>()
+            ?.data ??
+        const _SidebarItemsData();
   }
 
   @override
   bool updateShouldNotify(_SidebarItemsConfiguration oldWidget) {
-    return true;
+    return data != oldWidget.data;
   }
 }
 
 /// A macOS style navigation-list item intended for use in a [Sidebar]
-class _SidebarItem extends StatelessWidget {
-  /// Builds a [_SidebarItem].
-  // ignore: use_super_parameters
-  const _SidebarItem({
-    Key? key,
+class MacosSidebarItem extends StatelessWidget {
+  /// Builds a [MacosSidebarItem].
+  const MacosSidebarItem({
+    super.key,
     required this.item,
     required this.onClick,
     required this.selected,
-  }) : super(key: key);
+  });
 
   /// The widget to lay out first.
   ///
@@ -295,7 +320,7 @@ class _SidebarItem extends StatelessWidget {
                     ),
                   ),
                 DefaultTextStyle(
-                  style: labelStyle.copyWith(
+                  style: theme.typography.title3.copyWith(
                     color: selected ? textLuminance(selectedColor) : null,
                   ),
                   child: item.label,
@@ -412,11 +437,16 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
       children: <Widget>[
         SizedBox(
           width: double.infinity,
-          child: _SidebarItem(
+          child: MacosSidebarItem(
             item: SidebarItem(
               label: widget.item.label,
               leading: Row(
                 children: [
+                  if (widget.item.leading != null)
+                    Padding(
+                      padding: EdgeInsets.only(right: spacing),
+                      child: widget.item.leading!,
+                    ),
                   RotationTransition(
                     turns: _iconTurns,
                     child: Icon(
@@ -450,10 +480,10 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
         ClipRect(
           child: DefaultTextStyle(
             style: labelStyle,
-            child: Align(
-              alignment: Alignment.centerLeft,
-              heightFactor: _heightFactor.value,
-              child: child,
+          child: Align(
+            alignment: Alignment.centerLeft,
+            heightFactor: _heightFactor.value,
+            child: child,
             ),
           ),
         ),
@@ -481,7 +511,7 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
               ),
               child: SizedBox(
                 width: double.infinity,
-                child: _SidebarItem(
+                child: MacosSidebarItem(
                   item: item,
                   onClick: () => widget.onChanged?.call(item),
                   selected: widget.selectedItem == item,

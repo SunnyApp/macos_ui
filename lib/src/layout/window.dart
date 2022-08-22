@@ -25,6 +25,7 @@ class MacosWindow extends StatefulWidget {
     super.key,
     this.child,
     this.titleBar,
+    this.showSidebar = true,
     this.sidebar,
     this.backgroundColor,
     this.endSidebar,
@@ -226,14 +227,24 @@ class _MacosWindowState extends State<MacosWindow> {
                           child: widget.sidebar!.top!,
                         ),
                       Expanded(
-                        child: MacosScrollbar(
-                          controller: _sidebarScrollController,
-                          child: Padding(
-                            padding: widget.sidebar?.padding ?? EdgeInsets.zero,
-                            child: widget.sidebar!
-                                .builder(context, _sidebarScrollController),
-                          ),
-                        ),
+                        child: false
+                            ? MacosScrollbar(
+                                controller: _sidebarScrollController,
+                                child: Padding(
+                                  padding: widget.sidebar?.padding ??
+                                      EdgeInsets.zero,
+                                  child: widget.sidebar!.builder(
+                                    context,
+                                    _sidebarScrollController,
+                                  ),
+                                ),
+                              )
+                            : Padding(
+                                padding:
+                                    widget.sidebar?.padding ?? EdgeInsets.zero,
+                                child: widget.sidebar!
+                                    .builder(context, _sidebarScrollController),
+                              ),
                       ),
                       if (widget.sidebar?.bottom != null)
                         Padding(

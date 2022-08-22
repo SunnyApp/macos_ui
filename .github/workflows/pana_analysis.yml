@@ -28,6 +28,7 @@ jobs:
             echo Score too low!
             exit 1
           fi
+
       # This step is useful for PR's coming from forks. It takes the raw JSON and formats a report from it.
       - name: Format scores json
         env:

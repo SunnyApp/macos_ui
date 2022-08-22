@@ -9,7 +9,7 @@ analyzer:
     - dart_code_metrics
   exclude:
     - starter_app/**
-    
+
 dart_code_metrics:
   metrics:
     cyclomatic-complexity: 20

@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_ui/src/library.dart';
 
@@ -46,9 +45,9 @@ class MacosOverlayFilter extends StatelessWidget {
           BoxShadow(
             color: brightness
                 .resolve(
-                  CupertinoColors.systemGrey.color,
-                  CupertinoColors.black,
-                )
+              CupertinoColors.systemGrey.color,
+              CupertinoColors.black,
+            )
                 .withOpacity(0.25),
             offset: const Offset(0, 4),
             spreadRadius: 4.0,
