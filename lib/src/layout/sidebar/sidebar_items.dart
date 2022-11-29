@@ -1,41 +1,6 @@
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_ui/src/library.dart';
 
-const Duration _kExpand = Duration(milliseconds: 200);
-const ShapeBorder _defaultShape = RoundedRectangleBorder(
-  //TODO: consider changing to 4.0 or 5.0 - App Store, Notes and Mail seem to use 4.0 or 5.0
-  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-);
-
-/// {@template sidebarItemSize}
-/// Enumerates the size specifications of [SidebarItem]s
-///
-/// Values were adapted from https://developer.apple.com/design/human-interface-guidelines/components/navigation-and-search/sidebars/#platform-considerations
-/// and were eyeballed against apps like App Store, Notes, and Mail.
-/// {@endtemplate}
-enum SidebarItemSize {
-  /// A small [SidebarItem]. Has a [height] of 24 and an [iconSize] of 12.
-  small(24.0, 12.0),
-
-  /// A medium [SidebarItem]. Has a [height] of 28 and an [iconSize] of 16.
-  medium(29.0, 16.0),
-
-  /// A large [SidebarItem]. Has a [height] of 32 and an [iconSize] of 20.0.
-  large(36.0, 18.0);
-
-  /// {@macro sidebarItemSize}
-  const SidebarItemSize(
-    this.height,
-    this.iconSize,
-  );
-
-  /// The height of the [SidebarItem].
-  final double height;
-
-  /// The maximum size of the [SidebarItem]'s leading icon.
-  final double iconSize;
-}
-
 /// A scrollable widget that renders [SidebarItem]s.
 ///
 /// See also:
@@ -49,7 +14,6 @@ class SidebarItems extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onChanged,
-    required this.items,
     this.itemSize = SidebarItemSize.medium,
     this.shrinkWrap = false,
     this.scrollController,
@@ -59,9 +23,9 @@ class SidebarItems extends StatelessWidget {
     this.cursor = SystemMouseCursors.basic,
   }) : assert(currentIndex >= 0);
 
-  /// The [SidebarItem]s used by the sidebar. If no items are provided,
+  /// The [SidebarElement]s used by the sidebar. If no items are provided,
   /// the sidebar is not rendered.
-  final List<SidebarItem> items;
+  final List<SidebarElement> items;
 
   /// The current selected index. It must be in the range of 0 to
   /// [items.length]
@@ -101,32 +65,24 @@ class SidebarItems extends StatelessWidget {
   /// Defaults to [SystemMouseCursors.basic].
   final MouseCursor? cursor;
 
-  List<SidebarItem> get _allItems {
-    List<SidebarItem> result = [];
-    for (var element in items) {
-      if (element.disclosureItems != null) {
-        result.addAll(element.disclosureItems!);
-      } else {
-        result.add(element);
-      }
-    }
-    return result;
-  }
+  List<SidebarElement> get _allItems => [
+        for (var element in items) ...[
+          element,
+          if (element.disclosureItems != null)
+            for (final disc in element.disclosureItems!) disc,
+        ],
+      ];
 
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
     assert(debugCheckHasMacosTheme(context));
-    assert(currentIndex < _allItems.length);
+    assert(_allItems.isEmpty || currentIndex < _allItems.length);
     final theme = MacosTheme.of(context);
     return IconTheme.merge(
       data: const IconThemeData(size: 20),
-      child: _SidebarItemsConfiguration(
-        data: _SidebarItemsData(
-          selectedColor: selectedColor ?? theme.primaryColor,
-          unselectedColor: unselectedColor ?? MacosColors.transparent,
-          shape: shape ?? _defaultShape,
-        itemSize: itemSize,
+      child: SidebarItemsConfiguration(
+        data: SidebarItemsData.ofTheme(theme),
         child: ListView(
           shrinkWrap: shrinkWrap,
           controller: scrollController,
@@ -134,26 +90,35 @@ class SidebarItems extends StatelessWidget {
           padding: EdgeInsets.all(10.0 - theme.visualDensity.horizontal),
           children: List.generate(items.length, (index) {
             final item = items[index];
-            if (item.disclosureItems != null) {
-              return MouseRegion(
-                cursor: cursor!,
-                child: _DisclosureSidebarItem(
-                  item: item,
-                  selectedItem: _allItems[currentIndex],
-                  onChanged: (item) {
-                    onChanged(_allItems.indexOf(item));
-                  },
-                ),
-              );
-            }
-            return MouseRegion(
-              cursor: cursor!,
-              child: MacosSidebarItem(
-                item: item,
-                selected: _allItems[currentIndex] == item,
-                onClick: () => onChanged(_allItems.indexOf(item)),
-              ),
-            );
+            return item is SidebarDivider
+                ? const Divider()
+                : item is! SidebarItem
+                    ? Container()
+                    : !item.isSelectable &&
+                            item.disclosureItems?.isNotEmpty != true
+                        ? MacosSidebarLabel(item: item)
+                        : MouseRegion(
+                            cursor: cursor!,
+                            child: (item.disclosureItems?.isNotEmpty == true)
+                                ? _DisclosureSidebarItem(
+                                    item: item,
+                                    selected: _allItems[currentIndex] == item,
+                                    selectedItem: _allItems[currentIndex],
+                                    onChanged: (newItem) {
+                                      onChanged(_allItems.indexOf(newItem));
+                                      newItem.onTap?.call();
+                                    },
+                                  )
+                                : MacosSidebarItem(
+                                    type: SidebarItemType.main,
+                                    item: item,
+                                    selected: _allItems[currentIndex] == item,
+                                    onClick: () {
+                                      onChanged(_allItems.indexOf(item));
+                                      item.onTap?.call();
+                                    },
+                                  ),
+                          );
           }),
         ),
       ),
@@ -161,62 +126,25 @@ class SidebarItems extends StatelessWidget {
   }
 }
 
-class _SidebarItemsData {
-  const _SidebarItemsData({
-    this.selectedColor = MacosColors.transparent,
-    this.unselectedColor = MacosColors.transparent,
-    this.shape = _defaultShape,
-  });
-
-  final Color selectedColor;
-  final Color unselectedColor;
-  final ShapeBorder shape;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is _SidebarItemsData &&
-          runtimeType == other.runtimeType &&
-          selectedColor == other.selectedColor &&
-          unselectedColor == other.unselectedColor &&
-          shape == other.shape;
-
-  @override
-  int get hashCode =>
-      selectedColor.hashCode ^ unselectedColor.hashCode ^ shape.hashCode;
-}
-
-class _SidebarItemsConfiguration extends InheritedWidget {
-  const _SidebarItemsConfiguration({
-    super.key,
-    required super.child,
-    required this.data,
-  });
-
-  final _SidebarItemsData data;
-
-  static _SidebarItemsData of(BuildContext context) {
-    return context
-            .dependOnInheritedWidgetOfExactType<_SidebarItemsConfiguration>()
-            ?.data ??
-        const _SidebarItemsData();
-  }
-
-  @override
-  bool updateShouldNotify(_SidebarItemsConfiguration oldWidget) {
-    return data != oldWidget.data;
-  }
-}
+const kExpanderBaseWidth = 12.0;
+const kExpanderPadding = EdgeInsets.only(left: 4.0, right: 2.0);
+final kExpanderWidth =
+    kExpanderBaseWidth + (kExpanderPadding.left + kExpanderPadding.right);
+var kBaseVerticalPadding = 7.0;
+var kBaseHorizontalPadding = 10.0;
 
 /// A macOS style navigation-list item intended for use in a [Sidebar]
-class MacosSidebarItem extends StatelessWidget {
+class MacosSidebarItem extends StatefulWidget {
   /// Builds a [MacosSidebarItem].
   const MacosSidebarItem({
     super.key,
     required this.item,
     required this.onClick,
     required this.selected,
+    required this.type,
   });
+
+  final SidebarItemType type;
 
   /// The widget to lay out first.
   ///
@@ -231,8 +159,24 @@ class MacosSidebarItem extends StatelessWidget {
   /// Typically a [Navigator] call
   final VoidCallback? onClick;
 
+  @override
+  State<MacosSidebarItem> createState() => _MacosSidebarItemState();
+}
+
+class _MacosSidebarItemState extends State<MacosSidebarItem> {
+  bool _hover = false;
   void _handleActionTap() async {
-    onClick?.call();
+    widget.onClick?.call();
+  }
+
+  set _hovering(bool hovering) {
+    if (_hover != hovering) {
+      if (mounted) {
+        setState(() {
+          _hover = hovering;
+        });
+      }
+    }
   }
 
   Map<Type, Action<Intent>> get _actionMap => <Type, Action<Intent>>{
@@ -244,6 +188,150 @@ class MacosSidebarItem extends StatelessWidget {
         ),
       };
 
+  bool get hasLeading => widget.item.leading != null;
+
+  bool get hasTrailing => widget.item.trailing != null;
+
+  @override
+  Widget build(BuildContext context) {
+    assert(debugCheckHasMacosTheme(context));
+    final theme = MacosTheme.of(context);
+
+    var sidebarConfig = SidebarItemsConfiguration.of(context);
+
+    final double spacing =
+        kBaseHorizontalPadding + theme.visualDensity.horizontal;
+    final itemSize = widget.item.size ?? sidebarConfig.itemSize;
+
+    final foregroundColor = widget.selected
+        ? sidebarConfig.selectedScheme!.foregroundColor
+        : sidebarConfig.unselectedScheme!.foregroundColor;
+    final labelStyle = itemSize.textStyle(theme).merge(
+          (widget.selected
+                  ? sidebarConfig.selectedScheme!.textStyle
+                  : sidebarConfig.unselectedScheme!.textStyle)
+              .copyWith(color: foregroundColor),
+        );
+
+    late EdgeInsets padding;
+
+    switch (widget.type) {
+      case SidebarItemType.main:
+        padding = EdgeInsets.only(
+          top: kBaseVerticalPadding + theme.visualDensity.horizontal,
+          bottom: kBaseVerticalPadding + theme.visualDensity.horizontal,
+          right: spacing,
+          left: kExpanderWidth,
+        );
+        break;
+      case SidebarItemType.disclosure:
+        padding = EdgeInsets.only(
+          top: kBaseVerticalPadding + theme.visualDensity.horizontal,
+          bottom: kBaseVerticalPadding + theme.visualDensity.horizontal,
+          right: spacing,
+          left: 0,
+        );
+
+        break;
+      case SidebarItemType.child:
+        padding = EdgeInsets.only(
+          top: kBaseVerticalPadding + theme.visualDensity.horizontal,
+          bottom: kBaseVerticalPadding + theme.visualDensity.horizontal,
+          right: spacing,
+          left: kExpanderWidth,
+        );
+
+        break;
+    }
+
+    return Semantics(
+      label: widget.item.semanticLabel,
+      button: true,
+      focusable: true,
+      focused: widget.item.focusNode?.hasFocus,
+      enabled: widget.onClick != null,
+      selected: widget.selected,
+      child: MouseRegion(
+        onEnter: (_) => _hovering = true,
+        onExit: (_) => _hovering = false,
+        child: GestureDetector(
+          onTap: widget.onClick,
+          onSecondaryTap: widget.item.onContextMenu,
+          child: FocusableActionDetector(
+            focusNode: widget.item.focusNode,
+            descendantsAreFocusable: false,
+            enabled: widget.onClick != null,
+            //mouseCursor: SystemMouseCursors.basic,
+            actions: _actionMap,
+            child: Container(
+              width: 134.0 + theme.visualDensity.horizontal,
+              height: itemSize.height +
+                  theme.visualDensity.vertical +
+                  kBaseVerticalPadding,
+              decoration: ShapeDecoration(
+                color: _hover
+                    ? widget.selected
+                        ? sidebarConfig.selectedScheme!.hoverColor
+                        : sidebarConfig.unselectedScheme!.hoverColor
+                    : widget.selected
+                        ? sidebarConfig.selectedScheme!.backgroundColor
+                        : sidebarConfig.unselectedScheme!.backgroundColor,
+                shape: widget.item.shape ?? sidebarConfig.shape,
+              ),
+              padding: padding,
+              child: Row(
+                children: [
+                  if (hasLeading)
+                    Padding(
+                      padding: EdgeInsets.only(right: spacing),
+                      child: MacosIconTheme.merge(
+                        data: MacosIconThemeData(
+                          color: foregroundColor,
+                          size: itemSize.iconSize,
+                        ),
+                        child:
+                            Builder(builder: (context) => widget.item.leading!),
+                      ),
+                    ),
+                  DefaultTextStyle(
+                    style: labelStyle,
+                    child: widget.item.label != null
+                        ? Text(widget.item.label!, style: labelStyle)
+                        : widget.item.labelWidget!,
+                  ),
+                  if (hasTrailing) ...[
+                    const Spacer(),
+                    DefaultTextStyle(
+                      style: labelStyle.copyWith(
+                        color: widget.selected
+                            ? sidebarConfig.selectedScheme!.foregroundColor
+                            : sidebarConfig.selectedScheme!.foregroundColor,
+                      ),
+                      child: widget.item.trailing!,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MacosSidebarLabel extends StatelessWidget {
+  /// Builds a [MacosSidebarItem].
+  const MacosSidebarLabel({
+    super.key,
+    required this.item,
+  });
+
+  /// The widget to lay out first.
+  ///
+  /// Typically an [Icon]
+  final SidebarItem item;
+
   bool get hasLeading => item.leading != null;
   bool get hasTrailing => item.trailing != null;
 
@@ -252,90 +340,49 @@ class MacosSidebarItem extends StatelessWidget {
     assert(debugCheckHasMacosTheme(context));
     final theme = MacosTheme.of(context);
 
-    final selectedColor = MacosDynamicColor.resolve(
-      item.selectedColor ??
-          _SidebarItemsConfiguration.of(context).selectedColor,
-      context,
-    );
-    final unselectedColor = MacosDynamicColor.resolve(
-      item.unselectedColor ??
-          _SidebarItemsConfiguration.of(context).unselectedColor,
-      context,
-    );
+    final sidebarConfig = SidebarItemsConfiguration.of(context);
 
-    final double spacing = 10.0 + theme.visualDensity.horizontal;
-    final itemSize = _SidebarItemsConfiguration.of(context).itemSize;
-    TextStyle? labelStyle;
-    switch (itemSize) {
-      case SidebarItemSize.small:
-        labelStyle = theme.typography.subheadline;
-        break;
-      case SidebarItemSize.medium:
-        labelStyle = theme.typography.body;
-        break;
-      case SidebarItemSize.large:
-        labelStyle = theme.typography.title3;
-        break;
-    }
+    final double spacing =
+        kBaseHorizontalPadding + theme.visualDensity.horizontal;
+    final itemSize = item.size ?? sidebarConfig.itemSize;
+    var labelStyle = itemSize.textStyle(theme);
 
     return Semantics(
       label: item.semanticLabel,
-      button: true,
-      focusable: true,
-      focused: item.focusNode?.hasFocus,
-      enabled: onClick != null,
-      selected: selected,
-      child: GestureDetector(
-        onTap: onClick,
-        child: FocusableActionDetector(
-          focusNode: item.focusNode,
-          descendantsAreFocusable: false,
-          enabled: onClick != null,
-          //mouseCursor: SystemMouseCursors.basic,
-          actions: _actionMap,
-          child: Container(
-            width: 134.0 + theme.visualDensity.horizontal,
-            height: itemSize.height + theme.visualDensity.vertical,
-            decoration: ShapeDecoration(
-              color: selected ? selectedColor : unselectedColor,
-              shape: item.shape ?? _SidebarItemsConfiguration.of(context).shape,
-            ),
-            padding: EdgeInsets.symmetric(
-              vertical: 7 + theme.visualDensity.horizontal,
-              horizontal: spacing,
-            ),
-            child: Row(
-              children: [
-                if (hasLeading)
-                  Padding(
-                    padding: EdgeInsets.only(right: spacing),
-                    child: MacosIconTheme.merge(
-                      data: MacosIconThemeData(
-                        color: selected
-                            ? MacosColors.white
-                            : MacosColors.controlAccentColor,
-                        size: itemSize.iconSize,
-                      ),
-                      child: item.leading!,
+      button: false,
+      focusable: false,
+      enabled: true,
+      selected: false,
+      child: DefaultTextStyle(
+        style: labelStyle,
+        child: Container(
+          width: 134.0 + theme.visualDensity.horizontal,
+          height: itemSize.height + theme.visualDensity.vertical,
+          padding: EdgeInsets.symmetric(
+            vertical: kBaseVerticalPadding + theme.visualDensity.horizontal,
+            horizontal: spacing,
+          ),
+          child: Row(
+            children: [
+              if (hasLeading)
+                Padding(
+                  padding: EdgeInsets.only(right: spacing),
+                  child: MacosIconTheme.merge(
+                    data: MacosIconThemeData(
+                      color: MacosColors.controlAccentColor,
+                      size: itemSize.iconSize,
                     ),
+                    child: item.leading!,
                   ),
-                DefaultTextStyle(
-                  style: theme.typography.title3.copyWith(
-                    color: selected ? textLuminance(selectedColor) : null,
-                  ),
-                  child: item.label,
                 ),
-                if (hasTrailing) ...[
-                  const Spacer(),
-                  DefaultTextStyle(
-                    style: labelStyle.copyWith(
-                      color: selected ? textLuminance(selectedColor) : null,
-                    ),
-                    child: item.trailing!,
-                  ),
-                ],
+              item.label != null
+                  ? Text(item.label!, style: labelStyle)
+                  : item.labelWidget!,
+              if (hasTrailing) ...[
+                const Spacer(),
+                item.trailing!,
               ],
-            ),
+            ],
           ),
         ),
       ),
@@ -349,13 +396,16 @@ class _DisclosureSidebarItem extends StatefulWidget {
     Key? key,
     required this.item,
     this.selectedItem,
+    required this.selected,
     this.onChanged,
   })  : assert(item.disclosureItems != null),
         super(key: key);
 
-  final SidebarItem item;
+  final bool selected;
 
-  final SidebarItem? selectedItem;
+  final SidebarElement item;
+
+  final SidebarElement? selectedItem;
 
   /// A function to perform when the widget is clicked or tapped.
   ///
@@ -365,6 +415,8 @@ class _DisclosureSidebarItem extends StatefulWidget {
   @override
   __DisclosureSidebarItemState createState() => __DisclosureSidebarItemState();
 }
+
+const Duration _kExpand = Duration(milliseconds: 200);
 
 class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
     with SingleTickerProviderStateMixin {
@@ -377,14 +429,19 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
   late Animation<double> _iconTurns;
   late Animation<double> _heightFactor;
 
-  bool _isExpanded = false;
+  late bool _isExpanded;
 
-  bool get hasLeading => widget.item.leading != null;
+  bool get hasLeading => widget.item.asItem()?.leading != null;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(duration: _kExpand, vsync: this);
+    _isExpanded = widget.item.asItem()?.expanded == true;
+    _controller = AnimationController(
+      duration: _kExpand,
+      vsync: this,
+      value: _isExpanded ? 1.0 : 0.0,
+    );
     _heightFactor = _controller.drive(_easeInTween);
     _iconTurns = _controller.drive(_halfTween.chain(_easeInTween));
   }
@@ -401,6 +458,7 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
       if (_isExpanded) {
         _controller.forward();
       } else {
+        widget.onChanged!(widget.item as SidebarItem);
         _controller.reverse().then<void>((void value) {
           if (!mounted) return;
           setState(() {
@@ -410,80 +468,88 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
       }
       PageStorage.of(context)?.writeState(context, _isExpanded);
     });
+
     // widget.onExpansionChanged?.call(_isExpanded);
   }
 
   Widget _buildChildren(BuildContext context, Widget? child) {
     final theme = MacosTheme.of(context);
-    final double spacing = 10.0 + theme.visualDensity.horizontal;
 
-    final itemSize = _SidebarItemsConfiguration.of(context).itemSize;
-    TextStyle? labelStyle;
-    switch (itemSize) {
-      case SidebarItemSize.small:
-        labelStyle = theme.typography.subheadline;
-        break;
-      case SidebarItemSize.medium:
-        labelStyle = theme.typography.body;
-        break;
-      case SidebarItemSize.large:
-        labelStyle = theme.typography.title3;
-        break;
-    }
+    var sidebarConfig = SidebarItemsConfiguration.of(context);
+    final itemSize = widget.item.asItem()?.size ?? sidebarConfig.itemSize;
+
+    final foregroundColor = widget.selected
+        ? sidebarConfig.selectedScheme!.foregroundColor
+        : sidebarConfig.unselectedScheme!.foregroundColor;
+    final labelStyle = itemSize.textStyle(theme).merge(
+          (widget.selected
+                  ? sidebarConfig.selectedScheme!.textStyle
+                  : sidebarConfig.unselectedScheme!.textStyle)
+              .copyWith(color: foregroundColor),
+        );
+
+    final item = widget.item;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
+      children: [
         SizedBox(
           width: double.infinity,
-          child: MacosSidebarItem(
-            item: SidebarItem(
-              label: widget.item.label,
-              leading: Row(
-                children: [
-                  if (widget.item.leading != null)
-                    Padding(
-                      padding: EdgeInsets.only(right: spacing),
-                      child: widget.item.leading!,
-                    ),
-                  RotationTransition(
-                    turns: _iconTurns,
-                    child: Icon(
-                      CupertinoIcons.chevron_right,
-                      size: 12.0,
-                      color: theme.brightness == Brightness.light
-                          ? MacosColors.black
-                          : MacosColors.white,
-                    ),
-                  ),
-                  if (hasLeading)
-                    Padding(
-                      padding: EdgeInsets.only(left: spacing),
-                      child: MacosIconTheme.merge(
-                        data: MacosIconThemeData(size: itemSize.iconSize),
-                        child: widget.item.leading!,
+          child: item is SidebarDivider
+              ? const Divider()
+              : item is! SidebarItem
+                  ? Container()
+                  : MacosSidebarItem(
+                      type: SidebarItemType.disclosure,
+                      item: SidebarItem(
+                        onContextMenu: item.onContextMenu,
+                        onTap: item.onTap,
+                        size: item.size,
+                        label: item.label,
+                        leading: Row(
+                          children: [
+                            Padding(
+                              padding: kExpanderPadding,
+                              child: RotationTransition(
+                                turns: _iconTurns,
+                                child: Icon(
+                                  CupertinoIcons.chevron_right,
+                                  size: kExpanderBaseWidth,
+                                  color: foregroundColor,
+                                ),
+                              ),
+                            ),
+                            if (hasLeading)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 0),
+                                child: MacosIconTheme.merge(
+                                  data: MacosIconThemeData(
+                                    size: itemSize.iconSize,
+                                    color: foregroundColor,
+                                  ),
+                                  child: item.leading!,
+                                ),
+                              ),
+                          ],
+                        ),
+                        unselectedColor: MacosColors.transparent,
+                        focusNode: item.focusNode,
+                        semanticLabel: item.semanticLabel,
+                        shape: item.shape,
+                        trailing: item.trailing,
                       ),
+                      onClick: _handleTap,
+                      selected: widget.selected,
                     ),
-                ],
-              ),
-              unselectedColor: MacosColors.transparent,
-              focusNode: widget.item.focusNode,
-              semanticLabel: widget.item.semanticLabel,
-              shape: widget.item.shape,
-              trailing: widget.item.trailing,
-            ),
-            onClick: _handleTap,
-            selected: false,
-          ),
         ),
         ClipRect(
           child: DefaultTextStyle(
             style: labelStyle,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            heightFactor: _heightFactor.value,
-            child: child,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              heightFactor: _heightFactor.value,
+              child: child,
             ),
           ),
         ),
@@ -504,21 +570,28 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
         enabled: !closed,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: widget.item.disclosureItems!.map((item) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 24.0 + theme.visualDensity.horizontal,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: MacosSidebarItem(
-                  item: item,
-                  onClick: () => widget.onChanged?.call(item),
-                  selected: widget.selectedItem == item,
+          children: [
+            for (final disclosureItem in widget.item.disclosureItems!)
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 24.0 + theme.visualDensity.horizontal,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: disclosureItem is SidebarDivider
+                      ? const Divider()
+                      : disclosureItem is! SidebarItem
+                          ? Container()
+                          : MacosSidebarItem(
+                              type: SidebarItemType.child,
+                              item: disclosureItem,
+                              onClick: () =>
+                                  widget.onChanged?.call(disclosureItem),
+                              selected: widget.selectedItem == disclosureItem,
+                            ),
                 ),
               ),
-            );
-          }).toList(),
+          ],
         ),
       ),
     );
@@ -528,5 +601,11 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
       builder: _buildChildren,
       child: closed ? null : result,
     );
+  }
+}
+
+extension on SidebarElement {
+  SidebarItem? asItem() {
+    return this is SidebarItem ? this as SidebarItem : null;
   }
 }

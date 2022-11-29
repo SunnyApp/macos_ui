@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:macos_ui/macos_ui.dart';
-import 'package:macos_ui/src/library.dart';
 
 /// A widget that aims to approximate the [ListTile] widget found in
 /// Flutter's material library.
@@ -10,6 +9,7 @@ class MacosListTile extends StatelessWidget {
     super.key,
     this.leading,
     required this.title,
+    this.padding,
     this.subtitle,
     this.leadingWhitespace = 8,
     this.onClick,
@@ -19,6 +19,8 @@ class MacosListTile extends StatelessWidget {
 
   /// A widget to display before the [title].
   final Widget? leading;
+
+  final EdgeInsetsGeometry? padding;
 
   /// The primary content of the list tile.
   final Widget title;
@@ -57,21 +59,19 @@ class MacosListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   DefaultTextStyle(
-                    style: MacosTheme.of(context).typography.headline.copyWith(
+                    style: MacosTheme.of(context).typography.body.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                     child: title,
                   ),
                   if (subtitle != null)
                     DefaultTextStyle(
-                      style: MacosTheme.of(context)
-                          .typography
-                          .subheadline
-                          .copyWith(
-                            color: MacosTheme.brightnessOf(context).isDark
-                                ? MacosColors.systemGrayColor
-                                : const MacosColor(0xff88888C),
-                          ),
+                      style:
+                          MacosTheme.of(context).typography.caption1.copyWith(
+                                color: MacosTheme.brightnessOf(context).isDark
+                                    ? MacosColors.systemGrayColor
+                                    : const MacosColor(0xff88888C),
+                              ),
                       child: subtitle!,
                     ),
                 ],

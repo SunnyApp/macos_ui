@@ -214,52 +214,65 @@ class MacosSearchField<T> extends StatefulWidget {
 }
 
 class _MacosSearchFieldState<T> extends State<MacosSearchField<T>> {
-  final StreamController<List<SearchResultItem?>?> suggestionStream =
-      StreamController<List<SearchResultItem?>?>.broadcast();
-  FocusNode? _focus;
-  bool isResultExpanded = false;
+  late FocusNode _focus;
+
   TextEditingController? searchController;
-  late OverlayEntry _overlayEntry;
+  OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
   double height = 0.0;
   bool showOverlayAbove = false;
+
+  List<SearchResultItem>? _results;
 
   @override
   void initState() {
     super.initState();
     searchController = widget.controller ?? TextEditingController();
-    if (widget.focusNode != null) {
-      _focus = widget.focusNode;
+    _focus = widget.focusNode ?? FocusNode();
+    _focus.addListener(_checkOverlay);
+  }
+
+  bool get isResultExpanded {
+    return _focus.hasPrimaryFocus && _results?.isNotEmpty == true;
+  }
+
+  void _checkOverlay() {
+    if (_focus.hasPrimaryFocus && _results?.isNotEmpty == true) {
+      if (_overlayEntry == null) {
+        _overlayEntry = _createOverlay();
+        Overlay.of(context)!.insert(_overlayEntry!);
+      } else {
+        _overlayEntry!.markNeedsBuild();
+      }
     } else {
-      _focus = FocusNode();
+      _overlayEntry?.remove();
+      _overlayEntry = null;
     }
-    _focus!.addListener(() {
+  }
+
+  @override
+  void didUpdateWidget(MacosSearchField<T> oldWidget) {
+    var res = widget.results?.take(widget.maxResultsToShow).toList();
+    if (res != _results) {
       if (mounted) {
         setState(() {
-          isResultExpanded = _focus!.hasFocus;
+          _results = res;
         });
       }
-      if (isResultExpanded) {
-        _overlayEntry = _createOverlay();
-        Overlay.of(context)!.insert(_overlayEntry);
-      } else {
-        _overlayEntry.remove();
-      }
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      suggestionStream.sink.add(null);
-      suggestionStream.sink.add(widget.results);
-    });
+    }
+    Future.microtask(_checkOverlay);
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
   void dispose() {
-    suggestionStream.close();
     if (widget.controller == null) {
       searchController!.dispose();
     }
     if (widget.focusNode == null) {
-      _focus!.dispose();
+      _focus.dispose();
+    } else {
+      widget.focusNode!.removeListener(_checkOverlay);
     }
     super.dispose();
   }
@@ -279,33 +292,12 @@ class _MacosSearchFieldState<T> extends State<MacosSearchField<T>> {
             ),
             clearButtonMode: OverlayVisibilityMode.editing,
             onTap: () {
-              suggestionStream.sink.add(widget.results);
-              if (mounted) {
-                setState(() {
-                  isResultExpanded = true;
-                });
-              }
               widget.onTap?.call();
             },
             controller: widget.controller ?? searchController,
             focusNode: _focus,
             style: widget.style,
             onChanged: (query) {
-              final searchResult = <SearchResultItem>[];
-              if (query.isEmpty) {
-                suggestionStream.sink.add(widget.results);
-                return;
-              }
-              if (widget.results != null) {
-                for (final suggestion in widget.results!) {
-                  if (suggestion.searchKey
-                      .toLowerCase()
-                      .contains(query.toLowerCase())) {
-                    searchResult.add(suggestion);
-                  }
-                }
-              }
-              suggestionStream.sink.add(searchResult);
               widget.onChanged?.call(query);
             },
             decoration: widget.decoration,
@@ -333,27 +325,18 @@ class _MacosSearchFieldState<T> extends State<MacosSearchField<T>> {
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
     return OverlayEntry(
-      builder: (context) => StreamBuilder<List<SearchResultItem?>?>(
-        stream: suggestionStream.stream,
-        builder: (
-          BuildContext context,
-          AsyncSnapshot<List<SearchResultItem?>?> snapshot,
-        ) {
-          late var count = widget.maxResultsToShow;
-          if (snapshot.data != null) {
-            count = snapshot.data!.length;
-          }
-          return Positioned(
-            left: offset.dx,
-            width: size.width,
-            child: CompositedTransformFollower(
-              offset: _getYOffset(offset, size, count),
-              link: _layerLink,
-              child: _resultsBuilder(),
-            ),
-          );
-        },
-      ),
+      builder: (context) {
+        late var count = widget.maxResultsToShow;
+        return Positioned(
+          left: offset.dx,
+          width: size.width,
+          child: CompositedTransformFollower(
+            offset: _getYOffset(offset, size, count),
+            link: _layerLink,
+            child: _resultsBuilder(),
+          ),
+        );
+      },
     );
   }
 
@@ -377,70 +360,57 @@ class _MacosSearchFieldState<T> extends State<MacosSearchField<T>> {
   }
 
   Widget _resultsBuilder() {
-    return StreamBuilder<List<SearchResultItem?>?>(
-      stream: suggestionStream.stream,
-      builder: (
-        BuildContext context,
-        AsyncSnapshot<List<SearchResultItem?>?> snapshot,
-      ) {
-        if (widget.results == null ||
-            snapshot.data == null ||
-            !isResultExpanded) {
-          return const SizedBox.shrink();
-        } else if (snapshot.data!.isEmpty) {
-          return MacosOverlayFilter(
-            borderRadius: _kBorderRadius,
-            child: widget.emptyWidget,
-          );
-        } else {
-          if (snapshot.data!.length > widget.maxResultsToShow) {
-            height = widget.resultHeight * widget.maxResultsToShow;
-          } else if (snapshot.data!.length == 1) {
-            height = widget.resultHeight;
-          } else {
-            height = snapshot.data!.length * widget.resultHeight;
-          }
-          height += _kResultsOverlayMargin;
+    if (_results == null || !isResultExpanded) {
+      return const SizedBox.shrink();
+    } else if (_results == null || _results!.isEmpty) {
+      return MacosOverlayFilter(
+        borderRadius: _kBorderRadius,
+        child: widget.emptyWidget,
+      );
+    } else {
+      height = _results!.length * widget.resultHeight;
+      height += _kResultsOverlayMargin;
 
-          return MacosOverlayFilter(
-            borderRadius: _kBorderRadius,
-            color: MacosSearchFieldTheme.of(context).resultsBackgroundColor,
-            child: SizedBox(
-              height: height,
-              child: ListView.builder(
-                reverse: showOverlayAbove,
-                padding: const EdgeInsets.all(6.0),
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  var selectedItem = snapshot.data![index]!;
-                  return _SearchResultItemButton(
-                    resultHeight: widget.resultHeight,
-                    onPressed: () {
-                      searchController!.text = selectedItem.searchKey;
-                      searchController!.selection = TextSelection.fromPosition(
-                        TextPosition(
-                          offset: searchController!.text.length,
-                        ),
-                      );
-                      selectedItem.onSelected?.call();
-                      // Hide the results
-                      suggestionStream.sink.add(null);
-                      if (widget.onResultSelected != null) {
-                        widget.onResultSelected!(selectedItem);
-                      }
-                    },
-                    child: selectedItem.child ??
-                        Text(
-                          selectedItem.searchKey,
-                        ),
+      return MacosOverlayFilter(
+        borderRadius: _kBorderRadius,
+        color: MacosSearchFieldTheme.of(context).resultsBackgroundColor,
+        child: SizedBox(
+          height: height,
+          child: ListView.builder(
+            reverse: showOverlayAbove,
+            padding: const EdgeInsets.all(6.0),
+            itemCount: _results!.length,
+            itemBuilder: (context, index) {
+              var selectedItem = _results![index];
+              return _SearchResultItemButton(
+                resultHeight: widget.resultHeight,
+                onPressed: () {
+                  searchController!.text = selectedItem.searchKey;
+                  searchController!.selection = TextSelection.fromPosition(
+                    TextPosition(
+                      offset: searchController!.text.length,
+                    ),
                   );
+                  selectedItem.onSelected?.call();
+                  // Hide the results
+
+                  if (widget.onResultSelected != null) {
+                    widget.onResultSelected!(selectedItem);
+                  }
+                  if (mounted) {
+                    setState(() {
+                      _results = null;
+                      _checkOverlay();
+                    });
+                  }
                 },
-              ),
-            ),
-          );
-        }
-      },
-    );
+                child: selectedItem.child ?? Text(selectedItem.searchKey),
+              );
+            },
+          ),
+        ),
+      );
+    }
   }
 }
 

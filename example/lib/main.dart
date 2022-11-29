@@ -1,13 +1,13 @@
-import 'package:example/pages/buttons_page.dart';
-import 'package:example/pages/colors_page.dart';
-import 'package:example/pages/dialogs_page.dart';
-import 'package:example/pages/fields_page.dart';
-import 'package:example/pages/indicators_page.dart';
-import 'package:example/pages/selectors_page.dart';
-import 'package:example/pages/tabview_page.dart';
-import 'package:example/pages/toolbar_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:macos_ui/macos_ui.dart';
+import 'package:macos_ui_example/pages/buttons_page.dart';
+import 'package:macos_ui_example/pages/colors_page.dart';
+import 'package:macos_ui_example/pages/dialogs_page.dart';
+import 'package:macos_ui_example/pages/fields_page.dart';
+import 'package:macos_ui_example/pages/indicators_page.dart';
+import 'package:macos_ui_example/pages/selectors_page.dart';
+import 'package:macos_ui_example/pages/tabview_page.dart';
+import 'package:macos_ui_example/pages/toolbar_page.dart';
 import 'package:provider/provider.dart';
 
 import 'theme.dart';
@@ -107,7 +107,7 @@ class _WidgetGalleryState extends State<WidgetGallery> {
           ],
         ),
       ],
-      body: MacosWindow(
+      child: MacosWindow(
         sidebar: Sidebar(
           top: MacosSearchField(
             placeholder: 'Search',

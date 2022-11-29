@@ -16,6 +16,33 @@ export 'package:flutter/services.dart'
         SmartQuotesType,
         SmartDashesType;
 
+const _klightBorderSide = BorderSide(
+  width: 3,
+  color: Color.fromRGBO(0, 103, 244, 0.25),
+);
+const _kdarkBorderSide = BorderSide(
+  width: 3,
+  color: Color.fromRGBO(26, 169, 255, 0.3),
+);
+
+const _klightFocusedDecoration = BoxDecoration(
+  border: Border(
+    bottom: _klightBorderSide,
+    top: _klightBorderSide,
+    left: _klightBorderSide,
+    right: _klightBorderSide,
+  ),
+);
+
+const _kdarkFocusedDecoration = BoxDecoration(
+  border: Border(
+    bottom: _kdarkBorderSide,
+    top: _kdarkBorderSide,
+    left: _kdarkBorderSide,
+    right: _kdarkBorderSide,
+  ),
+);
+
 const TextStyle _kDefaultPlaceholderStyle = TextStyle(
   fontWeight: FontWeight.w400,
   color: CupertinoColors.placeholderText,
@@ -57,6 +84,7 @@ const BoxDecoration kDefaultRoundedBorderDecoration = BoxDecoration(
 
 const BoxDecoration kDefaultFocusedBorderDecoration = BoxDecoration(
   borderRadius: BorderRadius.all(Radius.circular(7.0)),
+  boxShadow: [],
 );
 
 const Color _kDisabledBackground = CupertinoDynamicColor.withBrightness(
@@ -133,40 +161,12 @@ class _TextFieldSelectionGestureDetectorBuilder
   }
 }
 
-class MacosTextFieldTheme extends InheritedWidget {
-  const MacosTextFieldTheme({
-    super.key,
-    required this.data,
-    required super.child,
-  });
-
-  final MacosTextFieldThemeData data;
-
-  @override
-  bool updateShouldNotify(covariant MacosTextFieldTheme oldWidget) {
-    return data != oldWidget.data;
-  }
-
-  static MacosTextFieldThemeData of(
-    BuildContext context, [
-    MacosThemeData? macosThemeData,
-  ]) {
-    final result =
-        context.dependOnInheritedWidgetOfExactType<MacosTextFieldTheme>();
-    if (result == null) {
-      return macosThemeData?.textFieldTheme ??
-          MacosTheme.of(context).textFieldTheme;
-    } else {
-      return result.data;
-    }
-  }
-}
-
 class MacosTextFieldThemeData {
   const MacosTextFieldThemeData.raw({
     required this.decoration,
     required this.focusedDecoration,
     required this.padding,
+    required this.margin,
     required this.placeholderStyle,
     required this.style,
     required this.strutStyle,
@@ -189,6 +189,7 @@ class MacosTextFieldThemeData {
     this.decoration,
     this.focusedDecoration,
     this.padding,
+    this.margin,
     this.placeholderStyle,
     this.style,
     this.strutStyle,
@@ -227,6 +228,11 @@ class MacosTextFieldThemeData {
   ///
   /// Defaults to a padding of 6 pixels on all sides and can be null.
   final EdgeInsets? padding;
+
+  /// Padding around the text element. The border of the text field will expand
+  /// into this area as needed./// Padding around the text element. The border of the text field will expand
+  /// into this area as needed.
+  final EdgeInsets? margin;
 
   /// The style to use for the placeholder text.
   ///
@@ -305,27 +311,27 @@ class MacosTextFieldThemeData {
   MacosTextFieldThemeData merge(MacosTextFieldThemeData? other) {
     if (other == null) return this;
     return copyWith(
-      decoration: other.decoration,
-      focusedDecoration: other.focusedDecoration,
-      padding: other.padding,
+      decoration: other.decoration ?? decoration,
+      focusedDecoration: other.focusedDecoration ?? focusedDecoration,
+      padding: other.padding ?? padding,
       placeholderStyle: placeholderStyle == null
           ? other.placeholderStyle
           : placeholderStyle!.merge(other.placeholderStyle),
       style: style == null ? other.style : style!.merge(other.style),
-      strutStyle: other.strutStyle,
-      textAlign: other.textAlign,
-      textAlignVertical: other.textAlignVertical,
-      obscuringCharacter: other.obscuringCharacter,
-      smartDashesType: other.smartDashesType,
-      smartQuotesType: other.smartQuotesType,
-      cursorWidth: other.cursorWidth,
-      cursorHeight: other.cursorHeight,
-      cursorRadius: other.cursorRadius,
-      scrollPadding: other.scrollPadding,
-      cursorColor: other.cursorColor,
-      selectionColor: other.selectionColor,
-      selectionHeightStyle: other.selectionHeightStyle,
-      selectionWidthStyle: other.selectionWidthStyle,
+      strutStyle: other.strutStyle ?? strutStyle,
+      textAlign: other.textAlign ?? textAlign,
+      textAlignVertical: other.textAlignVertical ?? textAlignVertical,
+      obscuringCharacter: other.obscuringCharacter ?? obscuringCharacter,
+      smartDashesType: other.smartDashesType ?? smartDashesType,
+      smartQuotesType: other.smartQuotesType ?? smartQuotesType,
+      cursorWidth: other.cursorWidth ?? cursorWidth,
+      cursorHeight: other.cursorHeight ?? cursorHeight,
+      cursorRadius: other.cursorRadius ?? cursorRadius,
+      scrollPadding: other.scrollPadding ?? scrollPadding,
+      cursorColor: other.cursorColor ?? cursorColor,
+      selectionColor: other.selectionColor ?? selectionColor,
+      selectionHeightStyle: other.selectionHeightStyle ?? selectionHeightStyle,
+      selectionWidthStyle: other.selectionWidthStyle ?? selectionWidthStyle,
     );
   }
 
@@ -333,6 +339,7 @@ class MacosTextFieldThemeData {
     BoxDecoration? decoration,
     BoxDecoration? focusedDecoration,
     EdgeInsets? padding,
+    EdgeInsets? margin,
     TextStyle? placeholderStyle,
     TextStyle? style,
     StrutStyle? strutStyle,
@@ -352,6 +359,7 @@ class MacosTextFieldThemeData {
     ui.BoxWidthStyle? selectionWidthStyle,
   }) {
     return MacosTextFieldThemeData.raw(
+      margin: margin ?? this.margin,
       selectionColor: selectionColor ?? this.selectionColor,
       decoration: decoration ?? this.decoration,
       focusedDecoration: focusedDecoration ?? this.focusedDecoration,
@@ -374,17 +382,28 @@ class MacosTextFieldThemeData {
     );
   }
 
-  MacosTextFieldThemeData resolveWidget(MacosTextField widget) {
+  MacosTextFieldThemeData resolveWidget(
+    MacosTextField widget,
+    Brightness brightness,
+  ) {
+    var defaultFocusedDecoration = brightness == Brightness.dark
+        ? _kdarkFocusedDecoration
+        : _klightFocusedDecoration;
+    defaultFocusedDecoration =
+        defaultFocusedDecoration.merge(kDefaultFocusedBorderDecoration);
     return MacosTextFieldThemeData.raw(
-      decoration:
-          widget.decoration ?? decoration ?? kDefaultRoundedBorderDecoration,
-      focusedDecoration: widget.focusedDecoration ??
-          focusedDecoration ??
-          kDefaultFocusedBorderDecoration,
+      decoration: kDefaultRoundedBorderDecoration
+          .merge(decoration)
+          .merge(widget.decoration),
+      focusedDecoration: defaultFocusedDecoration
+          .merge(widget.focusedDecoration ?? focusedDecoration),
       padding: widget.padding ?? padding ?? const EdgeInsets.all(4.0),
-      placeholderStyle: (placeholderStyle ?? _kDefaultPlaceholderStyle)
-          .merge(widget.placeholderStyle),
-      style: (style ?? _kDefaultTextStyle).merge(widget.style),
+      margin: widget.margin ?? margin ?? EdgeInsets.zero,
+      placeholderStyle: (placeholderStyle ??
+                  style?.copyWith(color: style?.color?.withOpacity(0.4)))
+              ?.merge(widget.placeholderStyle) ??
+          widget.placeholderStyle,
+      style: style?.merge(widget.style) ?? widget.style,
       selectionColor: widget.selectionColor ?? selectionColor,
       strutStyle: widget.strutStyle ?? strutStyle,
       textAlign: widget.textAlign ?? textAlign ?? TextAlign.start,
@@ -514,6 +533,7 @@ class MacosTextField extends StatefulWidget {
     this.focusNode,
     this.decoration,
     this.focusedDecoration,
+    this.margin,
     this.padding,
     this.placeholder,
     this.placeholderStyle,
@@ -646,9 +666,10 @@ class MacosTextField extends StatefulWidget {
     this.focusNode,
     this.decoration,
     this.focusedDecoration,
+    this.margin,
     this.padding = const EdgeInsets.fromLTRB(2.0, 4.0, 2.0, 4.0),
     this.placeholder,
-    this.placeholderStyle = _kDefaultPlaceholderStyle,
+    this.placeholderStyle,
     this.prefix,
     this.prefixMode = OverlayVisibilityMode.always,
     this.suffix,
@@ -764,6 +785,11 @@ class MacosTextField extends StatefulWidget {
   ///
   /// Defaults to a padding of 6 pixels on all sides and can be null.
   final EdgeInsets? padding;
+
+  /// Padding around the text element. The border of the text field will expand
+  /// into this area as needed./// Padding around the text element. The border of the text field will expand
+  /// into this area as needed.
+  final EdgeInsets? margin;
 
   /// A lighter colored placeholder hint that appears on the first line of the
   /// text field when the text entry is empty.
@@ -1196,6 +1222,8 @@ class _MacosTextFieldState extends State<MacosTextField>
   bool get selectionEnabled => widget.selectionEnabled;
   // End of API for TextSelectionGestureDetectorBuilderDelegate.
 
+  MacosThemeData? _theme;
+
   @override
   void initState() {
     super.initState();
@@ -1253,6 +1281,9 @@ class _MacosTextFieldState extends State<MacosTextField>
 
   @override
   void dispose() {
+    _effectiveFocusNode.removeListener(_handleFocusChanged);
+    _effectiveController.removeListener(updateKeepAlive);
+    _effectiveController.removeListener(updateKeepAlive);
     _focusNode?.dispose();
     _controller?.dispose();
     super.dispose();
@@ -1359,6 +1390,7 @@ class _MacosTextFieldState extends State<MacosTextField>
   }
 
   Widget _addTextDependentAttachments(
+    MacosThemeData macTheme,
     MacosTextFieldThemeData theme,
     Widget editableText,
     TextStyle textStyle,
@@ -1370,7 +1402,7 @@ class _MacosTextFieldState extends State<MacosTextField>
       return editableText;
     }
 
-    Color iconsColor = MacosTheme.of(context).brightness.isDark
+    Color iconsColor = macTheme.brightness.isDark
         ? const Color.fromRGBO(255, 255, 255, 0.55)
         : const Color.fromRGBO(0, 0, 0, 0.5);
     if (widget.enabled != null && widget.enabled == false) {
@@ -1474,18 +1506,69 @@ class _MacosTextFieldState extends State<MacosTextField>
     );
   }
 
+  bool get _isFocused => _effectiveFocusNode.hasFocus;
+  bool get _isEnabled => widget.enabled ?? true;
+  bool get _isDisabled => !_isEnabled;
+
+  /// returns the inner and outer box decorations.  This is to maintain the same
+  /// outer shape, while allowing the borders to resize.  The BoxDecoration, after
+  /// it's calculated, should be split into border/background
+
+  _TextBoxDecorations _effectiveDecoration(
+    BuildContext context,
+    MacosThemeData themeData,
+    MacosTextFieldThemeData resolvedTheme,
+  ) {
+    final Color disabledColor =
+        MacosDynamicColor.resolve(_kDisabledBackground, context);
+
+    var outer = resolvedTheme.decoration ?? kDefaultBoxDecorationSource;
+    if (_isFocused) {
+      outer = outer.merge(resolvedTheme.focusedDecoration);
+    }
+    if (_isDisabled) {
+      outer = outer.merge(
+        BoxDecoration(
+          border: Border.fromBorderSide(
+            BorderSide(color: disabledColor),
+          ),
+        ),
+      );
+    }
+
+    outer = outer.resolveColors(context, themeData.brightness);
+
+    var innerPadding = resolvedTheme.padding!;
+    var outerMargin = resolvedTheme.margin!;
+    var decoWidth = resolvedTheme.decoration?.border?.top.width;
+    var focusedWidth = resolvedTheme.focusedDecoration?.border?.top.width;
+    if (decoWidth != null && focusedWidth != null) {
+      final diff = focusedWidth - decoWidth;
+      if (diff > 0 && !_isFocused) {
+        outerMargin += EdgeInsets.all(diff);
+      }
+    }
+    // Increase padding by the difference in border between focused/unfocused
+    return _TextBoxDecorations(
+      borderDecoration: outer,
+      controlDecoration: const BoxDecoration(),
+      margin: outerMargin,
+      padding: innerPadding,
+    );
+  }
+
   @override
   // ignore: code-metrics
   Widget build(BuildContext context) {
     super.build(context); // See AutomaticKeepAliveClientMixin.
     assert(debugCheckHasDirectionality(context));
     assert(debugCheckHasMacosTheme(context));
-    final TextEditingController controller = _effectiveController;
+    final controller = _effectiveController;
 
-    var macosThemeData = MacosTheme.of(context);
     // ignore: no_leading_underscores_for_local_identifiers
-    final _textFieldTheme = MacosTextFieldTheme.of(context, macosThemeData);
-    var textFieldTheme = _textFieldTheme.resolveWidget(widget);
+    final _textFieldTheme = theme.textFieldTheme;
+    var textFieldTheme =
+        _textFieldTheme.resolveWidget(widget, theme.brightness);
 
     TextSelectionControls? textSelectionControls = widget.selectionControls;
     switch (defaultTargetPlatform) {
@@ -1502,7 +1585,6 @@ class _MacosTextFieldState extends State<MacosTextField>
         break;
     }
 
-    final bool enabled = widget.enabled ?? true;
     final Offset cursorOffset = Offset(
       _iOSHorizontalCursorOffsetPixels /
           MediaQuery.of(context).devicePixelRatio,
@@ -1516,7 +1598,6 @@ class _MacosTextFieldState extends State<MacosTextField>
           maxLengthEnforcement: _effectiveMaxLengthEnforcement,
         ),
     ];
-    final MacosThemeData themeData = macosThemeData;
 
     final TextStyle? resolvedStyle = (textFieldTheme.style)?.copyWith(
       color:
@@ -1527,7 +1608,7 @@ class _MacosTextFieldState extends State<MacosTextField>
       ),
     );
 
-    final textStyle = themeData.typography.body.merge(resolvedStyle);
+    final textStyle = theme.typography.body.merge(resolvedStyle);
 
     final resolvedPlaceholderStyle = textFieldTheme.placeholderStyle?.copyWith(
       color: MacosDynamicColor.maybeResolve(
@@ -1540,113 +1621,32 @@ class _MacosTextFieldState extends State<MacosTextField>
       ),
     );
 
-    final placeholderStyle = textStyle.merge(enabled
-        ? resolvedPlaceholderStyle
-        : resolvedPlaceholderStyle!
-            .copyWith(color: resolvedPlaceholderStyle.color!.withOpacity(0.2)));
+    final placeholderStyle = textStyle.merge(
+      _isEnabled
+          ? resolvedPlaceholderStyle?.copyWith(
+              fontSize: textStyle.fontSize,
+              color: resolvedPlaceholderStyle.color!.withOpacity(0.2),
+            )
+          : resolvedPlaceholderStyle!.copyWith(
+              fontSize: textStyle.fontSize,
+              color: resolvedPlaceholderStyle.color!.withOpacity(0.2),
+            ),
+    );
 
     final Brightness keyboardAppearance =
-        widget.keyboardAppearance ?? MacosTheme.brightnessOf(context);
-    final Color cursorColor =
-        MacosDynamicColor.maybeResolve(textFieldTheme.cursorColor, context) ??
-            themeData.primaryColor;
-    final Color disabledColor =
-        MacosDynamicColor.resolve(_kDisabledBackground, context);
+        widget.keyboardAppearance ?? theme.brightness;
+    Color? cursorColor;
+    cursorColor = MacosDynamicColor.maybeResolve(widget.cursorColor, context);
+    cursorColor ??=
+        theme.brightness.isDark ? MacosColors.white : MacosColors.black;
 
-    final Color? decorationColor = MacosDynamicColor.maybeResolve(
-      textFieldTheme.decoration?.color,
-      context,
-    );
+    final Color selectionColor =
+        textFieldTheme.selectionColor ?? MacosColors.selectedTextColor;
 
-    // New code from merge
-    // final Brightness keyboardAppearance =
-    //     widget.keyboardAppearance ?? MacosTheme.brightnessOf(context);
-    // Color? cursorColor;
-    // cursorColor = MacosDynamicColor.maybeResolve(widget.cursorColor, context);
-    // cursorColor ??=
-    // themeData.brightness.isDark ? MacosColors.white : MacosColors.black;
-    // final Color disabledColor =
-    // MacosDynamicColor.resolve(_kDisabledBackground, context);
-    //
-    // Color? decorationColor =
-    // MacosDynamicColor.maybeResolve(widget.decoration?.color, context);
-    // if (decorationColor.runtimeType == ResolvedMacosDynamicColor) {
-    //   if ((decorationColor as ResolvedMacosDynamicColor).color ==
-    //       const Color(0xffffffff) ||
-    //       (decorationColor).darkColor == const Color(0xff000000)) {
-    //     decorationColor = themeData.brightness.isDark
-    //         ? const Color.fromRGBO(30, 30, 30, 1)
-    //         : MacosColors.white;
-    //   }
-    // }
-
-    final BoxBorder? border = textFieldTheme.decoration?.border;
-    Border? resolvedBorder = border as Border?;
-    if (border is Border) {
-      BorderSide resolveBorderSide(BorderSide side) {
-        return side == BorderSide.none
-            ? side
-            : side.copyWith(
-                color: MacosDynamicColor.resolve(side.color, context),
-              );
-      }
-
-      resolvedBorder = border.runtimeType != Border
-          ? border
-          : Border(
-              top: resolveBorderSide(border.top),
-              left: resolveBorderSide(border.left),
-              bottom: resolveBorderSide(border.bottom),
-              right: resolveBorderSide(border.right),
-            );
-    }
-
-    final BoxDecoration? effectiveDecoration =
-        textFieldTheme.decoration?.copyWith(
-      border: resolvedBorder,
-      color: enabled ? decorationColor : disabledColor,
-    );
-
-    //frommerge
-    // Border.all(
-    //   width: 3.0,
-    //   color: themeData.brightness.isDark
-    //       ? const Color.fromRGBO(26, 169, 255, 0.3)
-    //       : const Color.fromRGBO(0, 103, 244, 0.25),
-    // );
-    final BoxDecoration? focusedDecoration =
-        textFieldTheme.focusedDecoration?.copyWith(
-      border: Border.all(width: 3.0, color: themeData.primaryColor),
-    );
-
-    final focusedPlaceholderDecoration = focusedDecoration?.copyWith(
-      border: () {
-        if (focusedDecoration.border is Border) {
-          BorderSide borderSide(BorderSide fromSide) {
-            return BorderSide(
-              color: fromSide.color.withOpacity(0.0),
-              style: fromSide.style,
-              width: fromSide.width,
-            );
-          }
-
-          return Border(
-            bottom: borderSide((focusedDecoration.border as Border).bottom),
-            top: borderSide((focusedDecoration.border as Border).top),
-            left: borderSide((focusedDecoration.border as Border).left),
-            right: borderSide((focusedDecoration.border as Border).right),
-          );
-        }
-        return focusedDecoration.border;
-      }(),
-      color: focusedDecoration.color ?? const Color(0x00000000),
-    );
-
-    final Color selectionColor = textFieldTheme.selectionColor ??
-        macosThemeData.primaryColor.withOpacity(0.2);
+    final decorations = _effectiveDecoration(context, theme, textFieldTheme);
 
     final Widget paddedEditable = Padding(
-      padding: textFieldTheme.padding!,
+      padding: decorations.padding,
       child: RepaintBoundary(
         child: UnmanagedRestorationScope(
           bucket: bucket,
@@ -1710,10 +1710,9 @@ class _MacosTextFieldState extends State<MacosTextField>
         ),
       ),
     );
-
     return Semantics(
-      enabled: enabled,
-      onTap: !enabled || widget.readOnly
+      enabled: _isEnabled,
+      onTap: _isDisabled || widget.readOnly
           ? null
           : () {
               if (!controller.selection.isValid) {
@@ -1723,16 +1722,14 @@ class _MacosTextFieldState extends State<MacosTextField>
               _requestKeyboard();
             },
       child: IgnorePointer(
-        ignoring: !enabled,
+        ignoring: _isDisabled,
         child: AnimatedContainer(
           /// Value eyeballed from MacOS Big Sur
           duration: const Duration(milliseconds: 125),
-          decoration: _effectiveFocusNode.hasFocus
-              ? focusedDecoration
-              : focusedPlaceholderDecoration,
+          margin: decorations.margin,
+          decoration: decorations.borderDecoration,
           child: Container(
-            decoration:
-                _effectiveFocusNode.hasFocus ? null : effectiveDecoration,
+            decoration: decorations.controlDecoration,
             child: _selectionGestureDetectorBuilder.buildGestureDetector(
               behavior: HitTestBehavior.translucent,
               child: Align(
@@ -1740,6 +1737,7 @@ class _MacosTextFieldState extends State<MacosTextField>
                 widthFactor: 1.0,
                 heightFactor: 1.0,
                 child: _addTextDependentAttachments(
+                  theme,
                   textFieldTheme,
                   paddedEditable,
                   textStyle,
@@ -1752,4 +1750,21 @@ class _MacosTextFieldState extends State<MacosTextField>
       ),
     );
   }
+
+  MacosThemeData get theme {
+    return _theme ??= MacosTheme.of(context);
+  }
+}
+
+class _TextBoxDecorations {
+  const _TextBoxDecorations({
+    required this.borderDecoration,
+    required this.controlDecoration,
+    required this.margin,
+    required this.padding,
+  });
+  final BoxDecoration? borderDecoration;
+  final BoxDecoration? controlDecoration;
+  final EdgeInsets margin;
+  final EdgeInsets padding;
 }

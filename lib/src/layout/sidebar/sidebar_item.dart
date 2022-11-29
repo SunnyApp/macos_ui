@@ -1,6 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:macos_ui/macos_ui.dart';
+import 'package:macos_ui/src/layout/sidebar/sidebar_config.dart';
 import 'package:macos_ui/src/library.dart';
+
+abstract class SidebarElement {
+  List<SidebarElement>? get disclosureItems => null;
+  bool get isSelectable => false;
+  String? get key => null;
+
+  const SidebarElement();
+}
+
+class SidebarDivider extends SidebarElement {
+  const SidebarDivider([this.key]);
+
+  @override
+  final String? key;
+}
 
 /// A macOS style navigation-list item intended for use in a [Sidebar]
 ///
@@ -8,19 +24,44 @@ import 'package:macos_ui/src/library.dart';
 ///
 ///  * [Sidebar], a side bar used alongside [MacosScaffold]
 ///  * [SidebarItems], the widget that displays [SidebarItem]s vertically
-class SidebarItem with Diagnosticable {
+class SidebarItem with Diagnosticable implements SidebarElement {
   /// Creates a sidebar item.
   const SidebarItem({
+    required this.size,
+    this.key,
     this.leading,
-    required this.label,
+    this.label,
+    this.labelWidget,
+    this.isSelectable = true,
     this.selectedColor,
     this.unselectedColor,
     this.shape,
     this.focusNode,
     this.semanticLabel,
+    this.expanded = false,
     this.disclosureItems,
     this.trailing,
-  });
+    this.onTap,
+    required this.onContextMenu,
+  }) : assert(
+          label != null || labelWidget != null,
+        );
+
+  @override
+  final String? key;
+
+  /// Whether disclosure items (if they exist), should start out expanded.
+  final bool expanded;
+
+  final VoidCallback? onTap;
+  final VoidCallback? onContextMenu;
+
+  /// An overridden size for this item.
+  final SidebarItemSize? size;
+
+  /// Whether this item can be focused
+  @override
+  final bool isSelectable;
 
   /// The widget before [label].
   ///
@@ -30,7 +71,9 @@ class SidebarItem with Diagnosticable {
   /// Indicates what content this widget represents.
   ///
   /// Typically a [Text]
-  final Widget label;
+  final String? label;
+
+  final Widget? labelWidget;
 
   /// The color to paint this widget as when selected.
   ///
@@ -56,7 +99,8 @@ class SidebarItem with Diagnosticable {
   /// The disclosure items. If null, there will be no disclosure items.
   ///
   /// If non-null and [leading] is null, a local animated icon is created
-  final List<SidebarItem>? disclosureItems;
+  @override
+  final List<SidebarElement>? disclosureItems;
 
   /// An optional trailing widget.
   ///
@@ -73,10 +117,48 @@ class SidebarItem with Diagnosticable {
     properties.add(StringProperty('semanticLabel', semanticLabel));
     properties.add(DiagnosticsProperty<ShapeBorder>('shape', shape));
     properties.add(DiagnosticsProperty<FocusNode>('focusNode', focusNode));
-    properties.add(IterableProperty<SidebarItem>(
+    properties.add(IterableProperty<SidebarElement>(
       'disclosure items',
       disclosureItems,
     ));
     properties.add(DiagnosticsProperty<Widget?>('trailing', trailing));
+  }
+
+  SidebarItem copyWith({
+    String? key,
+    bool? expanded,
+    VoidCallback? onTap,
+    VoidCallback? onContextMenu,
+    SidebarItemSize? size,
+    bool? isSelectable,
+    Widget? leading,
+    String? label,
+    Widget? labelWidget,
+    Color? selectedColor,
+    Color? unselectedColor,
+    ShapeBorder? shape,
+    FocusNode? focusNode,
+    String? semanticLabel,
+    List<SidebarElement>? disclosureItems,
+    Widget? trailing,
+  }) {
+    return SidebarItem(
+      key: key ?? this.key,
+      expanded: expanded ?? this.expanded,
+      onTap: onTap ?? this.onTap,
+      onContextMenu: onContextMenu ?? this.onContextMenu,
+      size: size ?? this.size,
+      isSelectable: isSelectable ?? this.isSelectable,
+      leading: leading ?? this.leading,
+      label: label ?? this.label,
+      labelWidget: labelWidget ?? this.labelWidget,
+      selectedColor: selectedColor ?? this.selectedColor,
+      unselectedColor: unselectedColor ?? this.unselectedColor,
+      shape: shape ?? this.shape,
+      focusNode: focusNode ?? this.focusNode,
+      semanticLabel: semanticLabel ?? this.semanticLabel,
+      disclosureItems: disclosureItems ?? this.disclosureItems,
+      trailing: trailing ?? this.trailing,
+    );
   }
 }

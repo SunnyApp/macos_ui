@@ -69,13 +69,19 @@ class _MacosScaffoldState extends State<MacosScaffold> {
     );
 
     final MacosThemeData theme = MacosTheme.of(context);
-    late Color backgroundColor = widget.backgroundColor ?? theme.canvasColor;
+    final backgroundColor = widget.backgroundColor ?? theme.canvasColor;
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final height = constraints.maxHeight;
         final mediaQuery = MediaQuery.of(context);
+        final mediaSize = mediaQuery.size;
+        var width = constraints.maxWidth == double.infinity
+            ? mediaSize.width
+            : constraints.maxWidth;
+        var height = constraints.maxHeight == double.infinity
+            ? mediaSize.height
+            : constraints.maxHeight;
+
         final children = widget.children;
         double topPadding = 0;
         if (widget.toolBar != null) topPadding += widget.toolBar!.height;
@@ -115,9 +121,7 @@ class _MacosScaffoldState extends State<MacosScaffold> {
 }
 
 class _ScaffoldBody extends MultiChildRenderObjectWidget {
-  _ScaffoldBody({
-    super.children,
-  });
+  _ScaffoldBody({super.children});
 
   @override
   RenderObject createRenderObject(BuildContext context) {
