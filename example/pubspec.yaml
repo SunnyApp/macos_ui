@@ -10,7 +10,9 @@ dependencies:
   flutter: 
     sdk: flutter
   macos_ui: 
-    path: /Users/ericm/sunny/trippi_plugins/macos_ui
+    git: 
+      url: git@github.com:SunnyApp/macos_ui.git
+      ref: trippi_app
 dev_dependencies: 
   flutter_lints: ^2.0.1
   flutter_test: 
