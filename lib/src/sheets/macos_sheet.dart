@@ -119,20 +119,9 @@ Future<T?> showMacosSheet<T>({
   ).withOpacity(0.6);
 
   return Navigator.of(context, rootNavigator: useRootNavigator).push<T>(
-    _MacosSheetRoute<T>(
+    MacosModalSheetRoute<T>(
       settings: routeSettings,
-      pageBuilder: (context, animation, secondaryAnimation) {
-        if (constraints is BoxConstraints) {
-          return Center(
-            child: Container(
-              constraints: constraints,
-              child: builder(context),
-            ),
-          );
-        } else {
-          return builder(context);
-        }
-      },
+      pageBuilder: builder,
       barrierDismissible: barrierDismissible,
       barrierColor: barrierColor,
       barrierLabel: barrierLabel ??
@@ -141,31 +130,29 @@ Future<T?> showMacosSheet<T>({
   );
 }
 
-class _MacosSheetRoute<T> extends PopupRoute<T> {
-  _MacosSheetRoute({
-    required RoutePageBuilder pageBuilder,
-    bool barrierDismissible = false,
-    Color? barrierColor = const Color(0x80000000),
-    String? barrierLabel,
+typedef ModalSheetBuilder = Widget Function(BuildContext context);
+
+class MacosModalSheetRoute<T> extends PopupRoute<T> {
+  MacosModalSheetRoute({
+    required this.pageBuilder,
+    this.barrierDismissible = false,
+    this.barrierColor = const Color(0x80000000),
+    this.barrierLabel,
+    this.constraints,
     super.settings,
-  })  : _pageBuilder = pageBuilder,
-        _barrierDismissible = barrierDismissible,
-        _barrierLabel = barrierLabel,
-        _barrierColor = barrierColor;
+  });
 
-  final RoutePageBuilder _pageBuilder;
+  final ModalSheetBuilder pageBuilder;
+
+  final BoxConstraints? constraints;
+  @override
+  final bool barrierDismissible;
 
   @override
-  bool get barrierDismissible => _barrierDismissible;
-  final bool _barrierDismissible;
+  final String? barrierLabel;
 
   @override
-  String? get barrierLabel => _barrierLabel;
-  final String? _barrierLabel;
-
-  @override
-  Color? get barrierColor => _barrierColor;
-  final Color? _barrierColor;
+  final Color? barrierColor;
 
   @override
   Curve get barrierCurve => Curves.linear;
@@ -185,7 +172,7 @@ class _MacosSheetRoute<T> extends PopupRoute<T> {
     return Semantics(
       scopesRoute: true,
       explicitChildNodes: true,
-      child: _pageBuilder(context, animation, secondaryAnimation),
+      child: pageBuilder(context),
     );
   }
 
@@ -217,6 +204,142 @@ class _MacosSheetRoute<T> extends PopupRoute<T> {
         ),
         child: child,
       ),
+    );
+  }
+}
+
+class MacosModalSheetRoute2<T> extends PageRoute<T> {
+  MacosModalSheetRoute2({
+    required this.pageBuilder,
+    this.barrierDismissible = false,
+    this.barrierColor = const Color(0x80000000),
+    this.barrierLabel,
+    this.constraints,
+    this.maintainState = true,
+    super.settings,
+  });
+
+  final ModalSheetBuilder pageBuilder;
+
+  @override
+  final bool maintainState;
+
+  final BoxConstraints? constraints;
+
+  @override
+  final bool barrierDismissible;
+
+  @override
+  final String? barrierLabel;
+
+  @override
+  final Color? barrierColor;
+
+  @override
+  Curve get barrierCurve => Curves.linear;
+
+  @override
+  bool get opaque => false;
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 450);
+
+  @override
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 120);
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    return Semantics(
+      scopesRoute: true,
+      explicitChildNodes: true,
+      child: Center(
+        child: _buildWithConstraints(
+          child: _buildInSheet(
+            child: pageBuilder(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInSheet({required Widget child}) {
+    return child;
+  }
+
+  Widget _buildWithConstraints({required Widget child}) {
+    if (constraints == null) {
+      return child;
+    } else {
+      return ConstrainedBox(constraints: constraints!, child: child);
+    }
+  }
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (animation.status == AnimationStatus.reverse) {
+      return FadeTransition(
+        opacity: CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutSine,
+        ),
+        child: child,
+      );
+    }
+    return ScaleTransition(
+      scale: CurvedAnimation(
+        parent: animation,
+        curve: const _SubtleBounceCurve(),
+      ),
+      child: FadeTransition(
+        opacity: CurvedAnimation(
+          parent: animation,
+          curve: Curves.fastLinearToSlowEaseIn,
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
+class MacosSheetPage<T> extends Page<T> {
+  const MacosSheetPage({
+    required this.child,
+    this.barrierDismissible = false,
+    this.barrierColor = const Color(0x80000000),
+    this.barrierLabel,
+  });
+
+  final Widget child;
+
+  final bool barrierDismissible;
+
+  final String? barrierLabel;
+
+  final Color? barrierColor;
+
+  Curve get barrierCurve => Curves.linear;
+
+  Duration get transitionDuration => const Duration(milliseconds: 450);
+
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 120);
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return MacosModalSheetRoute(
+      settings: this,
+      barrierDismissible: barrierDismissible,
+      barrierColor: barrierColor,
+      barrierLabel: barrierLabel,
+      pageBuilder: (context) => child,
     );
   }
 }

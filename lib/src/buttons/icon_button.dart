@@ -269,7 +269,12 @@ class MacosIconButtonState extends State<MacosIconButton>
                     heightFactor: 1.0,
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: widget.icon,
+                      child: theme.iconTheme == null
+                          ? widget.icon
+                          : MacosIconTheme(
+                              data: theme.iconTheme!,
+                              child: widget.icon,
+                            ),
                     ),
                   ),
                 ),

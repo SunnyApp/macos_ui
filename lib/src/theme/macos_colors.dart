@@ -92,6 +92,8 @@ class MacosColors {
   /// A fully transparent color.
   static const Color transparent = MacosColor(0x00000000);
 
+  static const Color lightHover = MacosColor(0xFFECECEC);
+
   /// A fully opaque black color.
   static const black = MacosColor(0xff000000);
 

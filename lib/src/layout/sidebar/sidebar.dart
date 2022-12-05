@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:macos_ui/macos_ui.dart';
+export './sidebar_config.dart';
 
 /// A macOS-style side bar at left side of the [MacosScaffold].
 class Sidebar {

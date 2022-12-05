@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_ui/src/library.dart';
 
+import '../layout/macos_menu_item.dart';
+
 /// Applies a macOS-style theme to descendant macOS widgets.
 ///
 /// Affects the color and text styles of macOS widgets whose styling
@@ -474,7 +476,7 @@ class MacosThemeData with Diagnosticable {
   final HelpButtonThemeData helpButtonTheme;
 
   /// The default style for [MacosTooltip]s below the overall [MacosTheme]
-  final TooltipThemeData tooltipTheme;
+  final MacosTooltipThemeData tooltipTheme;
 
   /// The density value for specifying the compactness of various UI components.
   ///
@@ -520,7 +522,8 @@ class MacosThemeData with Diagnosticable {
           HelpButtonThemeData.lerp(a.helpButtonTheme, b.helpButtonTheme, t),
       pushButtonTheme:
           PushButtonThemeData.lerp(a.pushButtonTheme, b.pushButtonTheme, t),
-      tooltipTheme: TooltipThemeData.lerp(a.tooltipTheme, b.tooltipTheme, t),
+      tooltipTheme:
+          MacosTooltipThemeData.lerp(a.tooltipTheme, b.tooltipTheme, t),
       visualDensity: VisualDensity.lerp(a.visualDensity, b.visualDensity, t),
       scrollbarTheme:
           MacosScrollbarThemeData.lerp(a.scrollbarTheme, b.scrollbarTheme, t),
