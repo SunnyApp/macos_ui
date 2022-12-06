@@ -77,8 +77,8 @@ packages:
   macos_ui:
     dependency: "direct main"
     description:
-      path: ".."
-      relative: true
+      path: "/Users/ericm/sunny/local_plugins/macos_ui"
+      relative: false
     source: path
     version: "1.7.4"
   matcher:
