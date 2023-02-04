@@ -455,10 +455,10 @@ class __DisclosureSidebarItemState extends State<_DisclosureSidebarItem>
   void _handleTap() {
     setState(() {
       _isExpanded = !_isExpanded;
+      widget.onChanged!(widget.item as SidebarItem);
       if (_isExpanded) {
         _controller.forward();
       } else {
-        widget.onChanged!(widget.item as SidebarItem);
         _controller.reverse().then<void>((void value) {
           if (!mounted) return;
           setState(() {

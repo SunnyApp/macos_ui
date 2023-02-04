@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:macos_ui/macos_ui.dart';
 
-import '../../theme/macos_colors.dart';
-
 const ShapeBorder _defaultShape = RoundedRectangleBorder(
   //TODO: consider changing to 4.0 or 5.0 - App Store, Notes and Mail seem to use 4.0 or 5.0
   borderRadius: BorderRadius.all(Radius.circular(5.0)),

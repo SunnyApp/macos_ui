@@ -87,6 +87,7 @@ class _MacosScaffoldState extends State<MacosScaffold> {
         if (widget.toolBar != null) topPadding += widget.toolBar!.height;
 
         return Stack(
+          fit: StackFit.loose,
           children: [
             // Background color
             Positioned.fill(

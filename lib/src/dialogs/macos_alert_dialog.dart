@@ -257,11 +257,12 @@ Future<T?> showMacosAlertDialog<T>({
     context,
   ).withOpacity(0.6);
 
+  final outerContext = context;
   return Navigator.of(context, rootNavigator: useRootNavigator).push<T>(
     _MacosAlertDialogRoute<T>(
       settings: routeSettings,
       pageBuilder: (context, animation, secondaryAnimation) {
-        return builder(context);
+        return builder(outerContext);
       },
       barrierDismissible: barrierDismissible,
       barrierColor: barrierColor,
@@ -308,10 +309,10 @@ class _MacosAlertDialogRoute<T> extends PopupRoute<T> {
 
   @override
   Widget buildPage(
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      ) {
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
     return Semantics(
       scopesRoute: true,
       explicitChildNodes: true,
@@ -321,11 +322,11 @@ class _MacosAlertDialogRoute<T> extends PopupRoute<T> {
 
   @override
   Widget buildTransitions(
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      Widget child,
-      ) {
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
     if (animation.status == AnimationStatus.reverse) {
       return FadeTransition(
         opacity: CurvedAnimation(

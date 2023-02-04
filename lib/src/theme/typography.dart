@@ -143,7 +143,6 @@ class MacosTypography with Diagnosticable {
   static MacosTypography black = MacosTypography(color: CupertinoColors.black);
   static MacosTypography white = MacosTypography(color: CupertinoColors.white);
 
-  /// Style used for body text.
   final TextStyle body;
 
   /// Style used for callouts.

@@ -185,7 +185,7 @@ class _WidgetGalleryState extends State<WidgetGallery> {
                       'assets/sf_symbols/button_programmable_2x.png',
                     ),
                   ),
-                  label: Text('Buttons'),
+                  label: 'Buttons',
                 ),
                 const SidebarItem(
                   leading: MacosImageIcon(
@@ -193,7 +193,7 @@ class _WidgetGalleryState extends State<WidgetGallery> {
                       'assets/sf_symbols/lines_measurement_horizontal_2x.png',
                     ),
                   ),
-                  label: Text('Indicators'),
+                  label: 'Indicators',
                 ),
                 const SidebarItem(
                   leading: MacosImageIcon(
@@ -201,11 +201,11 @@ class _WidgetGalleryState extends State<WidgetGallery> {
                       'assets/sf_symbols/character_cursor_ibeam_2x.png',
                     ),
                   ),
-                  label: Text('Fields'),
+                  label: 'Fields',
                 ),
                 SidebarItem(
                   leading: const MacosIcon(CupertinoIcons.folder),
-                  label: const Text('Disclosure'),
+                  label: 'Disclosure',
                   trailing: Text(
                     '2',
                     style: TextStyle(
@@ -221,21 +221,21 @@ class _WidgetGalleryState extends State<WidgetGallery> {
                           'assets/sf_symbols/rectangle_3_group_2x.png',
                         ),
                       ),
-                      label: Text('Colors'),
+                      label: 'Colors',
                     ),
                     const SidebarItem(
                       leading: MacosIcon(CupertinoIcons.infinite),
-                      label: Text('Item 3'),
+                      label: 'Item 3',
                     ),
                   ],
                 ),
                 const SidebarItem(
                   leading: MacosIcon(CupertinoIcons.square_on_square),
-                  label: Text('Dialogs & Sheets'),
+                  label: 'Dialogs & Sheets',
                 ),
                 const SidebarItem(
                   leading: MacosIcon(CupertinoIcons.macwindow),
-                  label: Text('Toolbar'),
+                  label: 'Toolbar',
                 ),
                 const SidebarItem(
                   leading: MacosImageIcon(
@@ -243,11 +243,11 @@ class _WidgetGalleryState extends State<WidgetGallery> {
                       'assets/sf_symbols/filemenu_and_selection_2x.png',
                     ),
                   ),
-                  label: Text('Selectors'),
+                  label: 'Selectors',
                 ),
                 const SidebarItem(
                   leading: MacosIcon(CupertinoIcons.uiwindow_split_2x1),
-                  label: Text('TabView'),
+                  label: 'TabView',
                 ),
               ],
             );

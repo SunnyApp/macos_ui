@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:macos_ui/src/layout/sidebar/sidebar_item.dart';
-import 'package:macos_ui/src/layout/sidebar/sidebar_items.dart';
-import 'package:macos_ui/src/theme/macos_theme.dart';
 
 import '../../macos_ui.dart';
 

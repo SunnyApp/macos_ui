@@ -62,8 +62,12 @@ class _ContentAreaState extends State<ContentArea> {
         _scrollController = ScrollController();
       }
     }
+    final mq = MediaQuery.of(context);
     return ConstrainedBox(
-      constraints: const BoxConstraints.expand().copyWith(
+      constraints: BoxConstraints(
+        maxWidth: mq.size.width,
+        maxHeight: mq.size.height,
+      ).copyWith(
         minWidth: widget.minWidth,
       ),
       child: SafeArea(

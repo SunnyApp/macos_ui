@@ -6,18 +6,33 @@ import 'package:macos_ui/macos_ui.dart';
 import 'package:macos_ui/src/library.dart';
 
 enum ButtonSize {
-  large,
-  small,
-}
+  small(
+    14,
+    EdgeInsets.symmetric(
+      vertical: 4.0,
+      horizontal: 13.0,
+    ),
+  ),
+  medium(
+    17,
+    EdgeInsets.symmetric(
+      vertical: 5.0,
+      horizontal: 20.0,
+    ),
+  ),
+  large(
+    21,
+    EdgeInsets.symmetric(
+      vertical: 6.0,
+      horizontal: 26.0,
+    ),
+  ),
+  ;
 
-const EdgeInsetsGeometry _kSmallButtonPadding = EdgeInsets.symmetric(
-  vertical: 3.0,
-  horizontal: 8.0,
-);
-const EdgeInsetsGeometry _kLargeButtonPadding = EdgeInsets.symmetric(
-  vertical: 6.0,
-  horizontal: 8.0,
-);
+  final EdgeInsetsGeometry padding;
+  final double fontSize;
+  const ButtonSize(this.fontSize, this.padding);
+}
 
 const BorderRadius _kSmallButtonRadius = BorderRadius.all(Radius.circular(5.0));
 const BorderRadius _kLargeButtonRadius = BorderRadius.all(Radius.circular(7.0));
@@ -232,11 +247,9 @@ class PushButtonState extends State<PushButton>
       context,
     );
 
-    final EdgeInsetsGeometry? buttonPadding = widget.padding == null
-        ? widget.buttonSize == ButtonSize.small
-            ? _kSmallButtonPadding
-            : _kLargeButtonPadding
-        : widget.padding;
+    final buttonPadding = widget.padding ?? widget.buttonSize.padding;
+
+    final fontSize = widget.buttonSize.fontSize;
 
     final BorderRadiusGeometry? borderRadius = widget.borderRadius == null
         ? widget.buttonSize == ButtonSize.small
@@ -250,8 +263,11 @@ class PushButtonState extends State<PushButton>
             ? const Color.fromRGBO(255, 255, 255, 0.25)
             : const Color.fromRGBO(0, 0, 0, 0.25);
 
-    final TextStyle textStyle =
-        theme.typography.headline.copyWith(color: foregroundColor);
+    final TextStyle textStyle = theme.typography.body.copyWith(
+      color: foregroundColor,
+      fontWeight: FontWeight.w400,
+      fontSize: fontSize,
+    );
 
     return MouseRegion(
       cursor: widget.mouseCursor!,
@@ -277,7 +293,7 @@ class PushButtonState extends State<PushButton>
                   color: !enabled ? disabledColor : backgroundColor,
                 ),
                 child: Padding(
-                  padding: buttonPadding!,
+                  padding: buttonPadding,
                   child: Align(
                     alignment: widget.alignment,
                     widthFactor: 1.0,

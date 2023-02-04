@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:macos_ui/macos_ui.dart';
-import 'package:macos_ui/src/layout/sidebar/sidebar_config.dart';
 import 'package:macos_ui/src/library.dart';
 
 abstract class SidebarElement {
@@ -27,7 +26,7 @@ class SidebarDivider extends SidebarElement {
 class SidebarItem with Diagnosticable implements SidebarElement {
   /// Creates a sidebar item.
   const SidebarItem({
-    required this.size,
+    this.size,
     this.key,
     this.leading,
     this.label,
@@ -42,7 +41,7 @@ class SidebarItem with Diagnosticable implements SidebarElement {
     this.disclosureItems,
     this.trailing,
     this.onTap,
-    required this.onContextMenu,
+    this.onContextMenu,
   }) : assert(
           label != null || labelWidget != null,
         );
