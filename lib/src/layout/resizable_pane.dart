@@ -50,7 +50,7 @@ class ResizablePane extends StatefulWidget {
   /// The builder that creates a child to display in this widget, which will
   /// use the provided [_scrollController] to enable the scrollbar to work.
   ///
-  /// Pass the [scrollController] obtained from this method, to a scrollable
+  /// Pass the [createScrollController] obtained from this method, to a scrollable
   /// widget used in this method to work with the internal [MacosScrollbar].
   final ScrollableWidgetBuilder builder;
 

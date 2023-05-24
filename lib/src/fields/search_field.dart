@@ -240,7 +240,7 @@ class _MacosSearchFieldState<T> extends State<MacosSearchField<T>> {
     if (_focus.hasPrimaryFocus && _results?.isNotEmpty == true) {
       if (_overlayEntry == null) {
         _overlayEntry = _createOverlay();
-        Overlay.of(context)!.insert(_overlayEntry!);
+        Overlay.of(context).insert(_overlayEntry!);
       } else {
         _overlayEntry!.markNeedsBuild();
       }
